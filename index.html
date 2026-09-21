@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chemlux IT Inventory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F4F1;
+  --panel:#FFFFFF;
+  --ink:#182521;
+  --ink-soft:#4B5A54;
+  --muted:#7C8B84;
+  --border:#DDE3EC;
+  --accent:#0147B5;
+  --accent-ink:#EAF1FD;
+  --accent-soft:#E6EEFB;
+  --amber:#B4700F;
+  --amber-soft:#FBF0DC;
+  --danger:#B23A2E;
+  --danger-soft:#FBE9E6;
+  --sidebar-bg:#081D42;
+  --sidebar-ink:#D3E0F7;
+  --sidebar-muted:#7C97C9;
+  --sidebar-active:#123467;
+  --radius:10px;
+  --radius-sm:6px;
+  --shadow: 0 1px 2px rgba(15,36,32,.06), 0 8px 24px rgba(15,36,32,.06);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101613;
+    --panel:#16201C;
+    --ink:#E7EEEA;
+    --ink-soft:#B9C6BF;
+    --muted:#7E8D86;
+    --border:#26303F;
+    --accent:#4C86F0;
+    --accent-ink:#071122;
+    --accent-soft:#152441;
+    --amber:#E3A94C;
+    --amber-soft:#2E2515;
+    --danger:#E17A6C;
+    --danger-soft:#2E1917;
+    --sidebar-bg:#071431;
+    --sidebar-ink:#D3E0F7;
+    --sidebar-muted:#5E7BAA;
+    --sidebar-active:#122A54;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1420; --panel:#141D2C; --ink:#E7ECF6; --ink-soft:#B9C4D9; --muted:#7E8DA8;
+  --border:#26303F; --accent:#4C86F0; --accent-ink:#071122; --accent-soft:#152441;
+  --amber:#E3A94C; --amber-soft:#2E2515; --danger:#E17A6C; --danger-soft:#2E1917;
+  --sidebar-bg:#071431; --sidebar-ink:#D3E0F7; --sidebar-muted:#5E7BAA; --sidebar-active:#122A54;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:'Inter',-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  font-size:14px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace;}
+#app{display:flex; min-height:100vh;}
+
+/* ---------- Sidebar ---------- */
+.sidebar{
+  width:240px; flex:0 0 240px; background:var(--sidebar-bg); color:var(--sidebar-ink);
+  display:flex; flex-direction:column; position:sticky; top:0; height:100vh; overflow-y:auto;
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.brand{padding:22px 20px 14px; }
+.brand-mark{display:flex; align-items:center; gap:10px;}
+.brand-dot{width:11px;height:11px;border-radius:3px;background:var(--accent);transform:rotate(45deg);flex:0 0 auto;}
+.brand h1{font-size:15.5px; font-weight:700; margin:0; letter-spacing:.2px; color:#fff;}
+.brand p{margin:3px 0 0; font-size:11.5px; color:var(--sidebar-muted);}
+.nav{flex:1; padding:6px 12px; display:flex; flex-direction:column; gap:2px;}
+.nav-group-label{font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--sidebar-muted); padding:14px 10px 6px;}
+.nav-btn{
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  padding:9px 10px; border-radius:8px; border:none; background:transparent; color:var(--sidebar-ink);
+  font-size:13.5px; font-weight:500; text-align:left; cursor:pointer; width:100%;
+}
+.nav-btn:hover{background:rgba(255,255,255,.05);}
+.nav-btn.active{background:var(--sidebar-active); color:#fff; font-weight:600;}
+.nav-btn .cnt{font-size:11px; color:var(--sidebar-muted); font-weight:500;}
+.nav-btn.active .cnt{color:var(--sidebar-ink);}
+.sidebar-foot{padding:14px 20px 18px; border-top:1px solid rgba(255,255,255,.07); font-size:11px; color:var(--sidebar-muted);}
+
+/* ---------- Main ---------- */
+.main{flex:1; min-width:0; display:flex; flex-direction:column;}
+.topbar{
+  position:sticky; top:0; z-index:5; background:var(--bg); padding:20px 28px 0;
+}
+.topbar-row{display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; padding-bottom:16px; border-bottom:1px solid var(--border);}
+.topbar h2{font-size:21px; margin:0 0 4px; font-weight:700; letter-spacing:-.01em;}
+.topbar .sub{color:var(--muted); font-size:13px;}
+.topbar-actions{display:flex; gap:8px; align-items:center;}
+.content{padding:20px 28px 60px; flex:1;}
+
+input[type=text],input[type=search],input[type=number],input[type=date],select,textarea{
+  font-family:inherit; font-size:13.5px; padding:8px 11px; border-radius:var(--radius-sm);
+  border:1px solid var(--border); background:var(--panel); color:var(--ink); outline:none;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft);}
+.search-box{position:relative;}
+.search-box input{padding-left:30px; width:230px;}
+.search-box svg{position:absolute; left:9px; top:50%; transform:translateY(-50%); opacity:.5; pointer-events:none;}
+
+button{font-family:inherit; cursor:pointer;}
+.btn{
+  display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600;
+  padding:8px 14px; border-radius:var(--radius-sm); border:1px solid var(--border);
+  background:var(--panel); color:var(--ink);
+}
+.btn:hover{border-color:var(--ink-soft);}
+.btn-primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent);}
+.btn-primary:hover{filter:brightness(1.06);}
+.btn-danger{background:var(--danger-soft); color:var(--danger); border-color:transparent;}
+.btn-ghost{background:transparent; border-color:transparent; color:var(--ink-soft);}
+.btn-ghost:hover{background:var(--accent-soft); color:var(--ink);}
+.btn-sm{padding:5px 9px; font-size:12px;}
+.icon-btn{
+  display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px;
+  border-radius:8px; border:1px solid transparent; background:transparent; color:var(--muted);
+}
+.icon-btn:hover{background:var(--accent-soft); color:var(--accent);}
+.icon-btn.danger:hover{background:var(--danger-soft); color:var(--danger);}
+
+/* pills / tabs */
+.pillbar{display:flex; gap:6px; margin:16px 0 0; flex-wrap:wrap;}
+.pill{
+  padding:6px 13px; border-radius:999px; font-size:12.5px; font-weight:600; border:1px solid var(--border);
+  background:var(--panel); color:var(--ink-soft);
+}
+.pill.active{background:var(--accent); border-color:var(--accent); color:var(--accent-ink);}
+
+/* stat cards */
+.stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(168px,1fr)); gap:12px; margin-bottom:22px;}
+.stat-card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px;}
+.stat-card .n{font-size:26px; font-weight:800; letter-spacing:-.02em;}
+.stat-card .l{font-size:12px; color:var(--muted); margin-top:2px; font-weight:500;}
+.stat-card.accent{background:var(--accent-soft); border-color:transparent;}
+.stat-card.accent .n{color:var(--accent);}
+.stat-card.warn{background:var(--amber-soft); border-color:transparent;}
+.stat-card.warn .n{color:var(--amber);}
+
+/* table */
+.table-wrap{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-top:16px;}
+.scroll-x{overflow-x:auto;}
+table{width:100%; border-collapse:collapse; font-size:13px; min-width:600px;}
+thead th{
+  text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted);
+  padding:11px 14px; border-bottom:1px solid var(--border); background:var(--bg); white-space:nowrap; font-weight:600;
+}
+tbody td{padding:10px 14px; border-bottom:1px solid var(--border); vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:var(--accent-soft);}
+td.num{text-align:right; font-variant-numeric:tabular-nums;}
+.rowcell-actions{display:flex; gap:4px; justify-content:flex-end;}
+.empty-state{padding:56px 20px; text-align:center; color:var(--muted);}
+.empty-state .big{font-size:15px; color:var(--ink-soft); font-weight:600; margin-bottom:5px;}
+
+.badge{display:inline-block; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:700; letter-spacing:.02em;}
+.badge-active{background:var(--accent-soft); color:var(--accent);}
+.badge-spare{background:#E7EEF7; color:#3B5C8C;}
+.badge-obsolete{background:var(--muted); color:var(--panel); opacity:.75;}
+.badge-lost, .badge-broken{background:var(--danger-soft); color:var(--danger);}
+.badge-inactive{background:var(--amber-soft); color:var(--amber);}
+.badge-in{background:var(--accent-soft); color:var(--accent);}
+.badge-out{background:var(--amber-soft); color:var(--amber);}
+
+/* modal */
+.overlay{position:fixed; inset:0; background:rgba(10,18,15,.5); display:flex; align-items:center; justify-content:center; z-index:50; padding:20px; overflow-y:auto;}
+.modal{background:var(--panel); border-radius:14px; width:100%; max-width:560px; box-shadow:var(--shadow); max-height:92vh; display:flex; flex-direction:column; margin:auto;}
+.modal-head{padding:18px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;}
+.modal-head h3{margin:0; font-size:16px; font-weight:700;}
+.modal-body{padding:18px 22px; overflow-y:auto;}
+.modal-foot{padding:16px 22px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:8px;}
+.form-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px 14px;}
+.form-grid .full{grid-column:1/-1;}
+.field label{display:block; font-size:12px; font-weight:600; color:var(--ink-soft); margin-bottom:5px;}
+.field input,.field select,.field textarea{width:100%;}
+.field textarea{resize:vertical; min-height:56px;}
+.field .hint{font-size:11px; color:var(--muted); margin-top:4px;}
+
+.toast-wrap{position:fixed; bottom:22px; right:22px; z-index:100; display:flex; flex-direction:column; gap:8px; max-width:320px;}
+.toast{background:var(--ink); color:var(--bg); padding:11px 15px; border-radius:9px; font-size:13px; box-shadow:var(--shadow); animation:toastin .15s ease-out;}
+.toast.err{background:var(--danger);}
+.toast.ok{background:var(--accent); color:var(--accent-ink);}
+@keyframes toastin{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+.section-card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; margin-top:16px;}
+.section-card h4{margin:0 0 4px; font-size:14px; font-weight:700;}
+.section-card p.desc{margin:0 0 14px; color:var(--muted); font-size:12.5px;}
+
+.kv-list{display:grid; grid-template-columns:1fr 1fr; gap:8px 20px;}
+.kv-list .k{color:var(--muted); font-size:12px;}
+.kv-list .v{font-size:13px; font-weight:500;}
+
+.loading-screen{position:fixed; inset:0; background:var(--bg); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px; z-index:200;}
+.spinner{width:26px; height:26px; border-radius:50%; border:3px solid var(--border); border-top-color:var(--accent); animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-screen p{color:var(--muted); font-size:13px;}
+
+.mobile-nav-toggle{display:none;}
+@media (max-width: 880px){
+  .sidebar{position:fixed; left:0; top:0; z-index:40; transform:translateX(-100%); transition:transform .2s; box-shadow:0 0 0 100vmax rgba(0,0,0,0); }
+  .sidebar.open{transform:translateX(0); box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .mobile-nav-toggle{display:inline-flex;}
+  .content{padding:16px 16px 60px;}
+  .topbar{padding:16px 16px 0;}
+  .form-grid{grid-template-columns:1fr;}
+  .search-box input{width:150px;}
+}
+.stock-flow-badge{display:inline-flex; align-items:center; gap:4px; font-weight:700; font-size:11.5px;}
+.tag-link{color:var(--accent); text-decoration:none; font-weight:700; cursor:pointer;}
+.tag-link:hover{text-decoration:underline;}
+</style>
+</head>
+<body>
+
+<div class="loading-screen" id="loadingScreen">
+  <div class="spinner"></div>
+  <p id="loadingMsg">Loading inventory…</p>
+</div>
+
+<div id="app" style="display:none;">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <span class="brand-dot"></span>
+        <h1>Chemlux IT Inventory</h1>
+      </div>
+      <p>Assets, ink stock &amp; repair log</p>
+    </div>
+    <nav class="nav" id="navList"></nav>
+    <div class="sidebar-foot">Data syncs live for everyone with this page open.</div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-row">
+        <div>
+          <button class="btn btn-ghost mobile-nav-toggle btn-sm" id="navToggle" style="margin-bottom:8px;">☰ Menu</button>
+          <h2 id="pageTitle">Dashboard</h2>
+          <div class="sub" id="pageSub">Overview of all tracked assets</div>
+        </div>
+        <div class="topbar-actions" id="topbarActions"></div>
+      </div>
+      <div class="pillbar" id="pillbar" style="display:none;"></div>
+    </div>
+    <div class="content" id="content"></div>
+  </main>
+</div>
+
+<div id="modalRoot"></div>
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+/* =========================================================================
+   CHEMLUX IT INVENTORY — data layer
+   ========================================================================= */
+const SEED = {"main": [{"tagNo": "LT001", "type": "LAPTOP", "model": "HP", "user": "Admin", "status": "Spare", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "SGS", "remarks": "USED FOR PLAYING SCOREBOARD IN BUILDING 11. Old Laptop.", "bitdefender": "", "os": "Windows 7 Ultimate", "motherboard": "", "processor": "", "gpu": "", "ram": "6Gb", "storage": "500 GB HDD", "macAddress": ""}, {"tagNo": "LT002", "type": "LAPTOP", "model": "LENOVO IDEAPAD 81WE", "user": "Daryl Joy Ynion", "status": "Active", "serial": "PF1WYBS0", "datePurchased": "2020-11-11", "dateTransferred": "2025-01-27", "previousUser": "ADT", "remarks": "OLD ADT'S LAPTOP", "bitdefender": "ituser03@chemluxinc.com", "os": "Windows 10 Home", "motherboard": "", "processor": "Intel Core  I5-1035G1", "gpu": "Geforce Mx 330", "ram": "12Gb", "storage": "512 GB SSD", "macAddress": "94:E7:0B:36:24:DC"}, {"tagNo": "DT003", "type": "DESKTOP", "model": "", "user": "Almige Ugali", "status": "Active", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "MEM", "remarks": "", "bitdefender": "ituser01@chemluxinc.com", "os": "Windows 10", "motherboard": "", "processor": "Intel Core I5-7400 Cpu", "gpu": "", "ram": "8Gb", "storage": "1 TB", "macAddress": ""}, {"tagNo": "LT004", "type": "LAPTOP", "model": "DELL INSPIRON 15 7000 7506 2-IN1", "user": "Ana Tirthdas", "status": "Active", "serial": "JWFFGL3", "datePurchased": "2022-05-13", "dateTransferred": "2022-05-14", "previousUser": "", "remarks": "", "bitdefender": "ituser01@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel Core I7-1165G7", "gpu": "", "ram": "16Gb", "storage": "500GB SSD", "macAddress": ""}, {"tagNo": "LT005", "type": "LAPTOP", "model": "LENOVO V14 G2 ALC", "user": "Carla A. Dianko", "status": "Active", "serial": "PF3LFL2L", "datePurchased": "", "dateTransferred": "2026-03-26", "previousUser": "CCE", "remarks": "", "bitdefender": "ituser03@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Amd Ryzen 54500U", "gpu": "Amd Radeon", "ram": "16Gb", "storage": "512 SSD", "macAddress": "00:45:E2:B7:FF:0B"}, {"tagNo": "DT006", "type": "DESKTOP", "model": "", "user": "Crystal Joy Alforte", "status": "Active", "serial": "", "datePurchased": "2019-08-23", "dateTransferred": "", "previousUser": "", "remarks": "", "bitdefender": "ituser01@chemluxinc.com", "os": "Windows 10 Enterprise", "motherboard": "", "processor": "Intel Core I5-9400", "gpu": "", "ram": "8Gb", "storage": "1 TB", "macAddress": ""}, {"tagNo": "DT007", "type": "DESKTOP", "model": "", "user": "Noraisa Sesalim", "status": "Active", "serial": "", "datePurchased": "2026-04-20", "dateTransferred": "", "previousUser": "JTP", "remarks": "Operations's Desktop", "bitdefender": "ituser07@chemluxinc.com", "os": "Windows 11 Pro", "motherboard": "", "processor": "Intel Core I3-8100 Cpu", "gpu": "", "ram": "8Gb", "storage": "500 GB SSD", "macAddress": ""}, {"tagNo": "LT008", "type": "LAPTOP", "model": "LENOVO 81WD IDEAPAD SLIM3", "user": "Kathleen D, Balandang", "status": "Active", "serial": "PF27BP4A", "datePurchased": "2020-07-29", "dateTransferred": "", "previousUser": "SMC -> CDA", "remarks": "", "bitdefender": "ituser06@chemluxinc.com", "os": "Windows 10 Hsl", "motherboard": "", "processor": "Intel Core 15-1035G1", "gpu": "", "ram": "8Gb", "storage": "", "macAddress": "34:2E:B7:AE:C0:A4"}, {"tagNo": "LT009", "type": "LAPTOP", "model": "LENOVO 81WD IDEAPAD SLIM3", "user": "Toni Rose M. Antiquado", "status": "Active", "serial": "PF27B5JE", "datePurchased": "2020-07-29", "dateTransferred": "2026-03-25", "previousUser": "BCF -> DMY ->HOS", "remarks": "OLD BCF'S LAPTOP", "bitdefender": "ituser06@chemluxinc.com", "os": "Windows 10 Hsl", "motherboard": "", "processor": "Intel Core I5-1035G1 Cpu", "gpu": "", "ram": "12Gb", "storage": "500 GB SSD", "macAddress": "34:2E:B7:BD:27:6B"}, {"tagNo": "DT010", "type": "DESKTOP", "model": "", "user": "Obsolete", "status": "Obsolete", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "", "remarks": "Old ABM Desktop, Defective Unit, 120GB SSD REMOVED", "bitdefender": "", "os": "Windows 10 Pro", "motherboard": "", "processor": "Intel Core I5 Cpu", "gpu": "", "ram": "", "storage": "", "macAddress": ""}, {"tagNo": "LT011", "type": "LAPTOP", "model": "HP PAVILION LAPTOP 15-EH0XXX", "user": "Dennis Tirthdas", "status": "Active", "serial": "5CD108QZVQ", "datePurchased": "2021-06-02", "dateTransferred": "", "previousUser": "", "remarks": "", "bitdefender": "ituser02@chemluxinc.com", "os": "Windows 10 Home", "motherboard": "", "processor": "Amd Ryzen 54500U", "gpu": "", "ram": "16Gb", "storage": "1TB SSD", "macAddress": ""}, {"tagNo": "LT012", "type": "LAPTOP", "model": "ACER TRAVELMATE P2 TMP214-52-33WN", "user": "Hannah Gayen Randera", "status": "Active", "serial": "NXVLFSP01X11704A347600", "datePurchased": "2021-09-09", "dateTransferred": "2026-03-27", "previousUser": "DCL", "remarks": "", "bitdefender": "ituser04@chemluxinc.com", "os": "Windows 10 Home", "motherboard": "", "processor": "Intel Core I10110U", "gpu": "", "ram": "16Gb", "storage": "500GB SSD", "macAddress": "F8:5E:A0:B3:54:07"}, {"tagNo": "DT013", "type": "DESKTOP", "model": "", "user": "Obsolete", "status": "Obsolete", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "PMB -> DCL -> ABM", "remarks": "OLD MR PROCESSING DESKTOP", "bitdefender": "", "os": "Windows 10 Pro", "motherboard": "", "processor": "", "gpu": "", "ram": "8Gb", "storage": "500 GB HDD", "macAddress": ""}, {"tagNo": "DT014", "type": "DESKTOP", "model": "", "user": "Kaye Bravo", "status": "Obsolete", "serial": "", "datePurchased": "2020-12-10", "dateTransferred": "2020-12-10", "previousUser": "EMG", "remarks": "Broken Motherboard", "bitdefender": "", "os": "Windows 10 Pro", "motherboard": "", "processor": "Intel Core I5-10500 Cpu", "gpu": "", "ram": "8Gb Ddr4", "storage": "1TB HDD", "macAddress": ""}, {"tagNo": "LT015", "type": "LAPTOP", "model": "ASUS X409JP", "user": "Richard David M. Ilovino", "status": "Active", "serial": "L4N0CX01767614B", "datePurchased": "2020-07-17", "dateTransferred": "2025-07-21", "previousUser": "EMG - DIB", "remarks": "ACCOUNTANT", "bitdefender": "ituser05@chemluxinc.com", "os": "Windows 10 Home", "motherboard": "", "processor": "Intel Core I5 10Th Gen", "gpu": "", "ram": "16Gb Ddr4", "storage": "500 GB HDD", "macAddress": "F8:E4:E3:BC:5D:C7"}, {"tagNo": "LT016", "type": "LAPTOP", "model": "DELL P64G", "user": "Melanie P. Embate", "status": "Active", "serial": "CYDKQC2", "datePurchased": 2016, "dateTransferred": "2025-08-15", "previousUser": "ESS", "remarks": "Returned - 7/7/2025", "bitdefender": "ituser07@chemluxinc.com", "os": "Windows 10", "motherboard": "", "processor": "Intel Core I3-6100 Cpu", "gpu": "", "ram": "12Gb", "storage": "500GB SSD", "macAddress": "E4:02:9B:47:FB:DF"}, {"tagNo": "LT017", "type": "LAPTOP", "model": "LENOVO IDEAPAD S145", "user": "Marjorie S. Selda", "status": "Active", "serial": "PF29VBAN", "datePurchased": "2020-11-05", "dateTransferred": "2026-02-03", "previousUser": "FAB -> ARL", "remarks": "", "bitdefender": "ituser02@chemluxinc.com", "os": "Windows 10 Pro", "motherboard": "", "processor": "Intel Core I3-8100 Cpu", "gpu": "", "ram": "4Gb", "storage": "120 SSD + 1TB HDD", "macAddress": "80:30:49:67:87:8B"}, {"tagNo": "LT018", "type": "LAPTOP", "model": "DELL INSPIRON 14 7430 P172G", "user": "Ma. Andrea B. Arenas", "status": "Active", "serial": "3LKN4Y3", "datePurchased": "2023-12-01", "dateTransferred": "2024-08-14", "previousUser": "KAM -> KCR", "remarks": "BRANDNEW SINCE DEC 2023", "bitdefender": "ituser04@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel Core I7 1355U", "gpu": "Amd Radeon", "ram": "16Gb", "storage": "1TB SSD", "macAddress": "BC:03:58:4A:84:81"}, {"tagNo": "LT019", "type": "LAPTOP", "model": "DELL INSPIRON 14 7430 P172G", "user": "Liezl Mendoza", "status": "Active", "serial": "JKKN4Y3", "datePurchased": "2023-12-01", "dateTransferred": "2025-07-02", "previousUser": "HSS", "remarks": "BRANDNEW SINCE DEC 2023", "bitdefender": "ituser03@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel Core I7 1355U", "gpu": "Amd Radeon", "ram": "16Gb", "storage": "1TB SSD", "macAddress": "BC:03:58:4C:A0:40"}, {"tagNo": "DT020", "type": "DESKTOP", "model": "ASUS H310M H 2.0", "user": "John Paul Dela Cruz", "status": "Active", "serial": "", "datePurchased": "", "dateTransferred": "2025-11-11", "previousUser": "MET -> HMA", "remarks": "UPGRADED STORAGE TO 500 SSD ", "bitdefender": "ituser07@chemluxinc.com", "os": "Windows 10 Pro", "motherboard": "Gigabyte H310M H 2.0", "processor": "Intel Core I3-9100 Cpu", "gpu": "", "ram": "16Gb", "storage": "500 GB SSD", "macAddress": "14:CC:20:86:2B:BC"}, {"tagNo": "DT021", "type": "DESKTOP", "model": "", "user": "Obsolete", "status": "Obsolete", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "", "remarks": "", "bitdefender": "", "os": "Windows 10 Pro", "motherboard": "", "processor": "", "gpu": "", "ram": "4Gb", "storage": "500 GB", "macAddress": ""}, {"tagNo": "DT022", "type": "DESKTOP", "model": "DESKTOP", "user": "Kaye Bravo", "status": "Active", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "CDS -> HOS", "remarks": "", "bitdefender": "ituser04@chemluxinc.com", "os": "Windows 10 Pro", "motherboard": "", "processor": "", "gpu": "", "ram": "", "storage": "", "macAddress": ""}, {"tagNo": "LT023", "type": "LAPTOP", "model": "ASUS X407UF-BV090T", "user": "Wilbert A. Gardon", "status": "Active", "serial": "JCN0GR06F16651B", "datePurchased": "2019-08-23", "dateTransferred": "2025-09-03", "previousUser": "VPM -> CDS -> HOS -> RGC", "remarks": "", "bitdefender": "ituser01@chemluxinc.com", "os": "Windows 10 Home", "motherboard": "", "processor": "Intel Core I3-7020U", "gpu": "", "ram": "8Gb + 4Gb Ddr4", "storage": "128GB SSD + 1TB HDD", "macAddress": ""}, {"tagNo": "LT024", "type": "LAPTOP", "model": "ASUS X409J-BV219T", "user": "Joshua B. Malabanan", "status": "Active", "serial": "L6N0CX00S99223A", "datePurchased": "2020-07-20", "dateTransferred": "2026-06-22", "previousUser": "HSS -> HER -> OJT -> WGO -> MRM", "remarks": "", "bitdefender": "ituser06@chemluxinc.com", "os": "Windows 10 Home", "motherboard": "", "processor": "Intel Core I3-1005G1", "gpu": "", "ram": "12Gb Ddr4", "storage": "500 GB SSD", "macAddress": "74:D8:3E:34:65:E3"}, {"tagNo": "LT025", "type": "LAPTOP", "model": "ACER ASPIRE 5", "user": "Monchito L. Lopez", "status": "Active", "serial": " ", "datePurchased": "2020-10-13", "dateTransferred": "2025-02-19", "previousUser": "IBI", "remarks": "", "bitdefender": "ituser04@chemluxinc.com", "os": "Windows 10 Hsl", "motherboard": "", "processor": "Intel Core I3-10110U", "gpu": "", "ram": "8Gb", "storage": "118 GB SSD + 1TB HDD", "macAddress": ""}, {"tagNo": "LT026", "type": "LAPTOP", "model": "ASUS X407UF-BV0527", "user": "Nora Garcia", "status": "Active", "serial": "JBN0GR06659846C", "datePurchased": "2019-08-23", "dateTransferred": "2025-09-01", "previousUser": "RAA -> CDS -> JAD-> SJA", "remarks": "", "bitdefender": "ituser03@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel Core I3-8130U", "gpu": "", "ram": "16Gb", "storage": "500 GB SSD", "macAddress": "D0:C5:D3:93:D2:DD"}, {"tagNo": "LT027", "type": "LAPTOP", "model": "LENOVO IDEAPAD 330-15IKB (81DE)", "user": "Victor Jan Red", "status": "Active", "serial": "PF1QSWRS", "datePurchased": "2019-08-23", "dateTransferred": "", "previousUser": "JCO", "remarks": "", "bitdefender": "ituser02@chemluxinc.com", "os": "Windows 10 Home", "motherboard": "", "processor": "Intel Core I5-8250U", "gpu": "", "ram": "12Gb Ddr4", "storage": "500GB SSD", "macAddress": "3C:91:80:7A:F0:77"}, {"tagNo": "LT028", "type": "LAPTOP", "model": "DELL INSPIRON 15 7000 - 7567", "user": "Jayson Sol", "status": "Active", "serial": "", "datePurchased": "2017-06-25", "dateTransferred": "", "previousUser": "JRS", "remarks": "", "bitdefender": "jasonrs@chemluxinc.com", "os": "Windows 10 Home", "motherboard": "", "processor": "", "gpu": "", "ram": "", "storage": "", "macAddress": "50:9A:4C:B5:AA:08"}, {"tagNo": "DT029", "type": "DESKTOP", "model": "DESKTOP", "user": "Remareal Camacho", "status": "Active", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "JES", "remarks": "", "bitdefender": "ituser03@chemluxinc.com", "os": "Windows 11 Pro", "motherboard": "", "processor": "Amd Ryzen 7 5700G", "gpu": "Amd Radeon", "ram": "16Gb", "storage": "1TB HDD 500GB SSD", "macAddress": ""}, {"tagNo": "LT030", "type": "LAPTOP", "model": "ASUS X407UF-BV090T", "user": "Mark Anthony Ibarreta", "status": "Active", "serial": "JCN0GR06F07251A", "datePurchased": "2019-08-23", "dateTransferred": "2026-09-16", "previousUser": "CCE -> JHG -> MRM -> RPM", "remarks": "", "bitdefender": "ituser01@chemluxinc.com", "os": "Windows 10 Home", "motherboard": "", "processor": "Intel Core I3-7020U", "gpu": "", "ram": "14Gb Ddr4", "storage": "480 GB SSD", "macAddress": "DC:F5:05:06:C3:A5"}, {"tagNo": "LT031", "type": "LAPTOP", "model": "", "user": "Jose Raquel Santos", "status": "Active", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "", "remarks": "", "bitdefender": "jasonrs@chemluxinc.com", "os": "Windows 11", "motherboard": "", "processor": "", "gpu": "", "ram": "", "storage": "", "macAddress": "44:38:E8:4E:62:B8"}, {"tagNo": "DT032", "type": "DESKTOP", "model": "ASUS - ALL SERIES", "user": "Mark Lorence B. Cainday", "status": "Active", "serial": "", "datePurchased": "", "dateTransferred": "2026-07-21", "previousUser": "HMA", "remarks": "", "bitdefender": "ituser05@chemluxinc.com", "os": "Windows 11 Pro", "motherboard": "", "processor": "Intel Core I3-4160", "gpu": "", "ram": "16Gb", "storage": "120GB SSD + 500 GB HDD", "macAddress": "58:04:4F:B1:1A:CD"}, {"tagNo": "LT033", "type": "LAPTOP", "model": "DELL INSPIRON 15 3511", "user": "Paulin R. Gamit", "status": "Obsolete", "serial": "B57TH03", "datePurchased": "2022-02-18", "dateTransferred": "2026-05-21", "previousUser": "JSP -> PAF", "remarks": "Dead Processor", "bitdefender": "", "os": "Windows 10 Home", "motherboard": "", "processor": "Intel Core I3-1115G4", "gpu": "", "ram": "8Gb", "storage": "128GB SSD/ 1TB HDD", "macAddress": "90:0F:0C:E4:F2:DD"}, {"tagNo": "LT034", "type": "LAPTOP", "model": "DELL INSPIRON 14 P157G", "user": "Jovelyn Espinosa", "status": "Active", "serial": "FDX6TL3", "datePurchased": "2022-11-18", "dateTransferred": "2022-11-23", "previousUser": "", "remarks": "BRANDNEW SINCE MAY 2022", "bitdefender": "ituser02@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Amd Ryzen 7 5825U", "gpu": "Amd Radeon", "ram": "16Gb", "storage": "500GB SSD", "macAddress": "30:03:C8:25:44:59"}, {"tagNo": "DT035", "type": "DESKTOP", "model": "DESKTOP", "user": "Joy Aletre", "status": "Active", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "JES", "remarks": "", "bitdefender": "ituser02@chemluxinc.com", "os": "Windows 11 Pro", "motherboard": "", "processor": "Intel Core I5-10500 Cpu", "gpu": "", "ram": "16Gb", "storage": "1TB HDD, 120 SSD, 1TB HDD", "macAddress": ""}, {"tagNo": "LT036", "type": "LAPTOP", "model": "DELL INSPIRON 15 3000", "user": "Justin G. Marquez", "status": "Active", "serial": "8BNT0H3", "datePurchased": "2022-02-18", "dateTransferred": "2026-06-22", "previousUser": "JJE-JBM", "remarks": "", "bitdefender": "ituser07@chemluxinc.com", "os": "Windows 10 Home", "motherboard": "", "processor": "Intel Core I3-1115G4", "gpu": "", "ram": "16Gb", "storage": "128GB SSD + 1TB HDD", "macAddress": "90:0F:0C:E6:3D:BF"}, {"tagNo": "DT037", "type": "DESKTOP", "model": "", "user": "Obsolete", "status": "Obsolete", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "QAQC -> PROD", "remarks": "Upgraded on 01-21-2024", "bitdefender": "", "os": "Windows 10 Pro", "motherboard": "", "processor": "Intel Core I3-4170 Cpu", "gpu": "", "ram": "16Gb", "storage": "240GB SSD + 1TB HDD", "macAddress": ""}, {"tagNo": "DT038", "type": "DESKTOP", "model": "", "user": "Kaye Bravo", "status": "Obsolete", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "KBB", "remarks": "No Hard Drive, No power Supply", "bitdefender": "", "os": "Windows 7", "motherboard": "", "processor": "Intel Core I5-7400 Cpu", "gpu": "", "ram": "8Gb", "storage": "1 TB", "macAddress": ""}, {"tagNo": "LT039", "type": "LAPTOP", "model": "LENOVO 80XQ", "user": "Kaye Bravo", "status": "Obsolete", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "HER -> MMA", "remarks": "Some Keys In Keyboard Not Working", "bitdefender": "", "os": "Windows 10 Home", "motherboard": "", "processor": "Intel Pentium N4200", "gpu": "", "ram": "4Gb", "storage": "500GB", "macAddress": ""}, {"tagNo": "LT040", "type": "LAPTOP", "model": "DELL INSPIRON 15 3000", "user": "Joseph S. Samarita", "status": "Active", "serial": "BJ6X0H30", "datePurchased": "2022-02-18", "dateTransferred": "2025-02-19", "previousUser": "JBB -> KCR -> KAM", "remarks": "", "bitdefender": "ituser04@chemluxinc.com", "os": "Windows 10 Home", "motherboard": "", "processor": "Intel Core I3-1115G4", "gpu": "", "ram": "8Gb", "storage": "128GB SSD/ 1TB HDD", "macAddress": ""}, {"tagNo": "LT041", "type": "LAPTOP", "model": "ASUS X407UF", "user": "Andrea B. Arenas", "status": "Active", "serial": "JCN0GR0F16651B", "datePurchased": "2026-08-03", "dateTransferred": "2026-08-03", "previousUser": "CCE -> KLS", "remarks": "Uprage storage to SSD ", "bitdefender": "ituser01@chemluxinc.com", "os": "Windows 10 Home", "motherboard": "", "processor": "Intel Core I3 7020U", "gpu": "", "ram": "12Gb", "storage": "500 SSD", "macAddress": "DC:F5:05:06:1F:AF"}, {"tagNo": "DT042", "type": "DESKTOP", "model": "BIOSTAR A520MH", "user": "Kyle Ryan B. Bravo", "status": "Active", "serial": "", "datePurchased": "2024-05-23", "dateTransferred": "2024-05-16", "previousUser": "", "remarks": "BRANDNEW SINCE MAY 2024", "bitdefender": "ituser04@chemluxinc.com", "os": "Windows 11 Pro", "motherboard": "", "processor": "Amd Ryzen 7", "gpu": "Amd Radeon (Built-In)", "ram": "16Gb", "storage": "500GB M.2 SSD, 500GB HDD", "macAddress": ""}, {"tagNo": "LT043", "type": "LAPTOP", "model": "ASUS X409JA-BV219T", "user": "Dayang Shanika Abirin", "status": "Active", "serial": "L6N0CX00S708233", "datePurchased": "2020-10-16", "dateTransferred": "2026-03-09", "previousUser": "MDG -> LTC", "remarks": "Battery socket is repaired (reseat the socket to motherboard)", "bitdefender": "ituser04@chemluxinc.com", "os": "Windows 10 Hsl", "motherboard": "", "processor": "Intel Core I3-1005G1", "gpu": "", "ram": "8Gb", "storage": "500 GB HDD", "macAddress": "74:D8:3E:37:73:05"}, {"tagNo": "LT044", "type": "LAPTOP", "model": "HP LAPTOP 14S-CF2515TU", "user": "Admin", "status": "Active", "serial": "5CG1347DP2", "datePurchased": "2022-06-03", "dateTransferred": "2026-08-14", "previousUser": "LLM -> JCO -> SJA", "remarks": "", "bitdefender": "ituser02@chemluxinc.com", "os": "Windows 10 Home", "motherboard": "", "processor": "Intel Core I3-10110U", "gpu": "", "ram": "8Gb + 4Gb", "storage": "120GB SSD + 1TB HDD", "macAddress": "5C:FB:3A:4F:58:9F"}, {"tagNo": "LT045", "type": "LAPTOP", "model": "DELL INSPIRON 14 7430", "user": "Wilsa Go", "status": "Active", "serial": "2LKN4Y3", "datePurchased": "2023-12-01", "dateTransferred": "2026-01-27", "previousUser": "LTE", "remarks": "BRANDNEW SINCE DEC 2023", "bitdefender": "ituser02@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel Core I7 1355U", "gpu": "Amd Radeon", "ram": "16Gb", "storage": "1TB SSD", "macAddress": "BC:03:58:48:35:C8"}, {"tagNo": "LT046", "type": "LAPTOP", "model": "DELL INSPIRON 14 2-IN-1", "user": "Mary Ann Garcia", "status": "Active", "serial": "2RXXG24", "datePurchased": "2024-06-19", "dateTransferred": "2024-06-26", "previousUser": "", "remarks": "BRANDNEW SINCE JUN 2024", "bitdefender": "ituser02@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel Core I7 150U", "gpu": "", "ram": "16Gb", "storage": "500GB SSD", "macAddress": "18:93:41:2E:3C:18"}, {"tagNo": "DT047", "type": "DESKTOP", "model": "", "user": "Obsolete", "status": "Obsolete", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "", "remarks": "", "bitdefender": "", "os": "Windows 10 Pro", "motherboard": "", "processor": "", "gpu": "", "ram": "4Gb", "storage": "500 GB", "macAddress": ""}, {"tagNo": "LT048", "type": "LAPTOP", "model": "DELL INSPIRON 15 3000", "user": "Operation spare", "status": "Active", "serial": "729S0H3", "datePurchased": "2022-02-17", "dateTransferred": "2022-09-17", "previousUser": "MBM", "remarks": "For Operations Use", "bitdefender": "ituser07@chemluxinc.com", "os": "Windows 10 Home", "motherboard": "", "processor": "Intel Core I3-1115G4", "gpu": "", "ram": "8Gb", "storage": "128GB SSD/ 1TB HDD", "macAddress": "90:0F:0C:E5:5B:F7"}, {"tagNo": "DT049", "type": "DESKTOP", "model": "BIOSTAR A520MH", "user": "Margie N. Gregorio", "status": "Active", "serial": "", "datePurchased": "2024-05-21", "dateTransferred": "2024-05-16", "previousUser": "ABM", "remarks": "BRANDNEW SINCE MAY 2024", "bitdefender": "ituser03@chemluxinc.com", "os": "Windows 11 Pro", "motherboard": "", "processor": "Amd Ryzen 7", "gpu": "Amd Radeon (Built-In)", "ram": "16Gb", "storage": "500GB M.2 SSD, 500GB HDD", "macAddress": ""}, {"tagNo": "LT050", "type": "LAPTOP", "model": "DELL INSPIRON 14 P157G", "user": "Mylene Amador", "status": "Active", "serial": "33JCKS3", "datePurchased": "2023-05-28", "dateTransferred": "2023-05-28", "previousUser": "", "remarks": "BRANDNEW SINCE MAY 2023", "bitdefender": "ituser01@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Amd Ryzen 7 5825U", "gpu": "Amd Radeon", "ram": "16Gb", "storage": "500GB SSD", "macAddress": "BC:F4:D4:B7:63:85"}, {"tagNo": "LT051", "type": "LAPTOP", "model": "DELL INSPIRON 14 P157G", "user": "Myra Consul", "status": "Active", "serial": "B8X6TL3", "datePurchased": "2022-11-18", "dateTransferred": "2022-11-21", "previousUser": "", "remarks": "BRANDNEW SINCE MAY 2022", "bitdefender": "ituser02@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Amd Ryzen 7 5825U", "gpu": "Amd Radeon", "ram": "16Gb", "storage": "500GB SSD", "macAddress": "30:03:C8:25:34:4D"}, {"tagNo": "DT052", "type": "DESKTOP", "model": "DESKTOP", "user": "Obsolete", "status": "Obsolete", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "", "remarks": "Old Printing Labels Desktop", "bitdefender": "", "os": "Windows 10 Pro", "motherboard": "", "processor": "Intel Pentium Cpu G630", "gpu": "", "ram": "12Gb Ram Ddr3", "storage": "500GB HDD", "macAddress": ""}, {"tagNo": "LT053", "type": "LAPTOP", "model": "ASUS X455L", "user": "Obsolete", "status": "Obsolete", "serial": "G7N0CV07X318285", "datePurchased": "", "dateTransferred": "", "previousUser": "JBB", "remarks": "No Power Possible Motherboard Issue", "bitdefender": "", "os": "Windows 10 Home", "motherboard": "", "processor": "Intel Core I3-5005U", "gpu": "", "ram": "4Gb", "storage": "500GB HDD", "macAddress": ""}, {"tagNo": "LT054", "type": "LAPTOP", "model": "ASUS A42F", "user": "Obsolete", "status": "Obsolete", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "KBB", "remarks": "Not working, old laptop.", "bitdefender": "", "os": "Windows 10 Home", "motherboard": "", "processor": "Intelcore I5 M480 Cpu", "gpu": "", "ram": "4Gb", "storage": "500 HDD", "macAddress": ""}, {"tagNo": "LT055", "type": "LAPTOP", "model": "ASUS K50I", "user": "Obsolete", "status": "Obsolete", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "", "remarks": "Obsolete", "bitdefender": "", "os": "Windows 10 Pro", "motherboard": "", "processor": "Intel Pentium Cpu N4200", "gpu": "", "ram": "4Gb", "storage": "500 GB HDD", "macAddress": ""}, {"tagNo": "LT056", "type": "LAPTOP", "model": "ASUS X455L", "user": "Obsolete", "status": "Obsolete", "serial": "FBN0WU25340848C", "datePurchased": "", "dateTransferred": "", "previousUser": "JCO", "remarks": "", "bitdefender": "", "os": "Windows 10 Home", "motherboard": "", "processor": "Intel Core I3-5005U", "gpu": "", "ram": "4Gb", "storage": "500 GB", "macAddress": ""}, {"tagNo": "LT057", "type": "LAPTOP", "model": "HP SPECTRE X360 CONVERTIBLE", "user": "Philip Villaruel", "status": "Active", "serial": "5CD5393PBM", "datePurchased": "", "dateTransferred": "2022-02-14", "previousUser": "JPRS", "remarks": "", "bitdefender": "jasonrs@chemluxinc.com", "os": "Windows 10 Home", "motherboard": "", "processor": "Intel Core I7-76500U", "gpu": "", "ram": "8Gb", "storage": "512 SSD", "macAddress": "94:65:9C:5F:F8:6B"}, {"tagNo": "LT058", "type": "LAPTOP", "model": "DELL INSPIRON 14 P157G", "user": "Princes Bacani", "status": "Active", "serial": "C3JCKS3", "datePurchased": "2023-05-28", "dateTransferred": "2023-05-30", "previousUser": "", "remarks": "BRANDNEW SINCE MAY 2023", "bitdefender": "ituser07@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Amd Ryzen 7 5825U", "gpu": "Amd Radeon", "ram": "16Gb", "storage": "500GB SSD", "macAddress": "BC:F4:D4:B7:63:59"}, {"tagNo": "DT059", "type": "DESKTOP", "model": "", "user": "Qb Server", "status": "Active", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "", "remarks": "", "bitdefender": "ituser06@chemluxinc.com", "os": "Windows 7", "motherboard": "", "processor": "", "gpu": "", "ram": "16Gb", "storage": "1TB SSD 1TB HDD", "macAddress": ""}, {"tagNo": "LT060", "type": "LAPTOP", "model": "DELL INSPIRON 15 3000", "user": "Francis - Cebu", "status": "Active", "serial": "40KL0H3", "datePurchased": "2022-02-18", "dateTransferred": "2024-01-08", "previousUser": "LTE -> RGC -> AGO", "remarks": "", "bitdefender": "ituser05@chemluxinc.com", "os": "Windows 10 Home", "motherboard": "", "processor": "Intel Core I3-1115G4", "gpu": "", "ram": "12Gb", "storage": "128GB SSD/ 1TB HDD", "macAddress": ""}, {"tagNo": "DT061", "type": "DESKTOP", "model": "DESKTOP", "user": "Regine Calderon", "status": "Active", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "RPC", "remarks": "", "bitdefender": "ituser04@chemluxinc.com", "os": "Windows 10 Pro", "motherboard": "", "processor": "Intel Core I3 4160 Cpu", "gpu": "", "ram": "16Gb", "storage": "500GB SSD", "macAddress": ""}, {"tagNo": "DT062", "type": "DESKTOP", "model": "", "user": "Obsolete", "status": "Obsolete", "serial": "F706E5EC", "datePurchased": "2020-01-03", "dateTransferred": "", "previousUser": "RRC", "remarks": "OLD RRC'S DESKTOP", "bitdefender": "", "os": "Windows 10 Pro", "motherboard": "", "processor": "Intel Core I5-9400F", "gpu": "", "ram": "16Gb", "storage": "1 TB", "macAddress": ""}, {"tagNo": "LT063", "type": "LAPTOP", "model": "ACER SWIFT 3-SF314 57 5954", "user": "Rica Robles", "status": "Active", "serial": "NXHJFSP001047029CE2N00", "datePurchased": "2021-01-27", "dateTransferred": "2026-03-27", "previousUser": "RAA", "remarks": "", "bitdefender": "ituser01@chemluxinc.com", "os": "Windows 10 Hsl", "motherboard": "", "processor": "Intel Core I5-1035G1 Cpu", "gpu": "", "ram": "8Gb Ddr4", "storage": "475 SSD", "macAddress": "3C:9C:0F:70:90:09"}, {"tagNo": "DT064", "type": "DESKTOP", "model": "PRIME B250M-A", "user": "Justine Claire J. Victor", "status": "Active", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "JDS -> SVJ -> CJV", "remarks": "UPGRADED TO 512GB M.2 SSD", "bitdefender": "ituser02@chemluxinc.com", "os": "Windows 11 Pro", "motherboard": "", "processor": "Intel(R) Core(Tm) I5-7400", "gpu": "", "ram": "16Gb", "storage": "250GB SSD, 1TB HDD", "macAddress": ""}, {"tagNo": "LT065", "type": "LAPTOP", "model": "DELL INSPIRON 14 2-IN-1", "user": "Shane Calderon", "status": "Active", "serial": "BMXKG24", "datePurchased": "2024-06-19", "dateTransferred": "2024-07-02", "previousUser": "", "remarks": "BRANDNEW SINCE JUN 2024", "bitdefender": "ituser07@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel Core I7 150U", "gpu": "", "ram": "16Gb", "storage": "500GB SSD", "macAddress": "18:93:41:2B:C7:C6"}, {"tagNo": "LT066", "type": "LAPTOP", "model": "DELL INSPIRON 14 P157G", "user": "Glenn G. Gendrano", "status": "Active", "serial": "70HCKS3", "datePurchased": "2023-05-28", "dateTransferred": "2026-05-05", "previousUser": "MAS -> SGS -> JMV -> BGF", "remarks": "BRANDNEW SINCE MAY 2023", "bitdefender": "ituser06@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Amd Ryzen 7 5825U", "gpu": "Amd Radeon", "ram": "16Gb", "storage": "500GB SSD", "macAddress": "BC:F4:D4:B7:40:D7"}, {"tagNo": "LT067", "type": "LAPTOP", "model": "ASUS X109FJ-HT831T", "user": "John Renier A. Adap", "status": "Active", "serial": "K5N0CX07S086227", "datePurchased": "2020-05-22", "dateTransferred": "2020-05-22", "previousUser": "AVA - SSC - VRR", "remarks": "", "bitdefender": "ituser05@chemluxinc.com", "os": "Windows 11 Pro", "motherboard": "", "processor": "Intel Core I3-8145U", "gpu": "", "ram": "4Gb + 8Gb", "storage": "240GB SSD", "macAddress": "DC:F5:05:80:D0:7B"}, {"tagNo": "LT068", "type": "LAPTOP", "model": "ACER SWIFT 3-SF314 57 5954", "user": "Mary Joy Matutina", "status": "Active", "serial": "NXHJFSP001038001D72N00", "datePurchased": "2020-12-16", "dateTransferred": "", "previousUser": "MEM -> MBG -> OJT", "remarks": "For editing labels for FDA used. WFH", "bitdefender": "ituser07@chemluxinc.com", "os": "Windows 10 Hsl", "motherboard": "", "processor": "Intel Core I5-1035G1 Cpu", "gpu": "", "ram": "8Gb Ddr4", "storage": "512 GB SSD", "macAddress": "38:68:93:DD:D0:79"}, {"tagNo": "DT069", "type": "DESKTOP", "model": "", "user": "Obsolete", "status": "Obsolete", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "MAS", "remarks": "Obsolete", "bitdefender": "", "os": "Windows  10", "motherboard": "", "processor": "Intel I3-4170 4Th Gen", "gpu": "", "ram": "16Gb", "storage": "1TB HDD", "macAddress": ""}, {"tagNo": "DT070", "type": "DESKTOP", "model": "", "user": "Obsolete", "status": "Obsolete", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "KRB", "remarks": "250GB SSD REMOVED", "bitdefender": "", "os": "Windows 10 Pro", "motherboard": "", "processor": "Intel I3-4160 4Th Gen", "gpu": "", "ram": "16Gb", "storage": "", "macAddress": ""}, {"tagNo": "LT071", "type": "LAPTOP", "model": "ASUS X441N", "user": "Wilbert A. Gardon", "status": "Obsolete", "serial": "H8N0NV076826334", "datePurchased": "", "dateTransferred": "2025-07-03", "previousUser": "VRR", "remarks": "Outdated laptop", "bitdefender": "", "os": "Windows 10 Hsl", "motherboard": "", "processor": "Intel Core I3 4th Gen", "gpu": "", "ram": "4Gb", "storage": "500 GB", "macAddress": ""}, {"tagNo": "LT072", "type": "LAPTOP", "model": "ACER TRAVELMATE P214 N19Q7", "user": "Leonides Jr. Ricablanca", "status": "Active", "serial": "NXVLFSP01X11704B237600", "datePurchased": "2021-09-09", "dateTransferred": "2024-11-25", "previousUser": "VPM", "remarks": "", "bitdefender": "ituser04@chemluxinc.com", "os": "Windows 10 Home", "motherboard": "", "processor": "Intel Core I3-10110U", "gpu": "", "ram": "8Gb", "storage": "128 GB SSD + 1TB HDD", "macAddress": ""}, {"tagNo": "DT073", "type": "DESKTOP", "model": "", "user": "Obsolete", "status": "Obsolete", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "MSC", "remarks": "DEFECTIVE UNIT", "bitdefender": "", "os": "Windows 10 Pro", "motherboard": "", "processor": "", "gpu": "", "ram": "4Gb", "storage": "500 GB + 500 GB PUR DRIVE HDD", "macAddress": ""}, {"tagNo": "DT074", "type": "DESKTOP", "model": "", "user": "Obsolete", "status": "Obsolete", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "MR / PO", "remarks": "", "bitdefender": "", "os": "Windows 7 Ultimate", "motherboard": "", "processor": "", "gpu": "", "ram": "4Gb", "storage": "500 GB", "macAddress": ""}, {"tagNo": "LT075", "type": "LAPTOP", "model": "LENOVO 81D0", "user": "Obsolete", "status": "Obsolete", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "RPC -> DCL", "remarks": "", "bitdefender": "", "os": "Windows 10 Pro", "motherboard": "", "processor": "Intel Pentium N5000", "gpu": "", "ram": "4Gb", "storage": "1TB HDD", "macAddress": ""}, {"tagNo": "LT076", "type": "LAPTOP", "model": "DELL INSPIRON 14 2-IN-1", "user": "Elmira Galabo", "status": "Lost", "serial": "8ZYKG24", "datePurchased": "2024-06-19", "dateTransferred": "2024-08-13", "previousUser": "", "remarks": "", "bitdefender": "", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel Core I7 150U", "gpu": "", "ram": "16Gb", "storage": "500GB SSD", "macAddress": ""}, {"tagNo": "LT077", "type": "LAPTOP", "model": "DELL INSPIRON 14 2-IN-1", "user": "Hermogenes Reyta", "status": "Active", "serial": "CZYKG24", "datePurchased": "2024-06-19", "dateTransferred": "2024-09-12", "previousUser": "", "remarks": "BRANDNEW SINCE JUN 2024", "bitdefender": "ituser05@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel Core I7 150U", "gpu": "", "ram": "16Gb", "storage": "500GB SSD", "macAddress": "18:93:41:2E:30:29"}, {"tagNo": "DT078", "type": "DESKTOP", "model": "GIGABYTE A520M V2", "user": "Kim Salvador", "status": "Active", "serial": "", "datePurchased": "2024-07-27", "dateTransferred": "2024-07-30", "previousUser": "", "remarks": "BRANDNEW SINCE JUL 2024", "bitdefender": "ituser03@chemluxinc.com", "os": "Windows 11 Pro", "motherboard": "", "processor": "Amd Ryzen 7", "gpu": "Amd Radeon (Built-In)", "ram": "16Gb", "storage": "500GB SSD", "macAddress": ""}, {"tagNo": "LT079", "type": "LAPTOP", "model": "TOSHIBA SATELLITE C55-B5200", "user": "Obsolete", "status": "Obsolete", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "", "remarks": "Obsolete", "bitdefender": "", "os": "", "motherboard": "", "processor": "", "gpu": "", "ram": "", "storage": "", "macAddress": ""}, {"tagNo": "LT080", "type": "LAPTOP", "model": "HP 14-B130US", "user": "Obsolete", "status": "Obsolete", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "", "remarks": "Obsolete", "bitdefender": "", "os": "", "motherboard": "", "processor": "", "gpu": "", "ram": "", "storage": "", "macAddress": ""}, {"tagNo": "LT081", "type": "LAPTOP", "model": "HP AMD A6", "user": "Obsolete", "status": "Obsolete", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "SGS", "remarks": "Obsolete", "bitdefender": "", "os": "", "motherboard": "", "processor": "", "gpu": "", "ram": "", "storage": "", "macAddress": ""}, {"tagNo": "LT082", "type": "LAPTOP", "model": "TOSHIBA SATELLITE L455-S5009", "user": "Obsolete", "status": "Obsolete", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "", "remarks": "Obsolete", "bitdefender": "", "os": "", "motherboard": "", "processor": "", "gpu": "", "ram": "", "storage": "", "macAddress": ""}, {"tagNo": "LT083", "type": "LAPTOP", "model": "ASUS X54C", "user": "Obsolete", "status": "Obsolete", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "", "remarks": "Obsolete", "bitdefender": "", "os": "", "motherboard": "", "processor": "", "gpu": "", "ram": "", "storage": "", "macAddress": ""}, {"tagNo": "LT084", "type": "LAPTOP", "model": "ASUS X54C", "user": "Obsolete", "status": "Obsolete", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "", "remarks": "Obsolete", "bitdefender": "", "os": "", "motherboard": "", "processor": "", "gpu": "", "ram": "", "storage": "", "macAddress": ""}, {"tagNo": "LT085", "type": "LAPTOP", "model": "HP 15-R210DX", "user": "Obsolete", "status": "Obsolete", "serial": "", "datePurchased": "", "dateTransferred": "", "previousUser": "", "remarks": "Obsolete", "bitdefender": "", "os": "", "motherboard": "", "processor": "", "gpu": "", "ram": "", "storage": "", "macAddress": ""}, {"tagNo": "LT086", "type": "LAPTOP", "model": "DELL INSPIRON 14 7440 P186G", "user": "Vincent Mendoza", "status": "Active", "serial": "D8WXS44", "datePurchased": "2024-10-09", "dateTransferred": "2024-10-16", "previousUser": "", "remarks": "BRANDNEW SINCE OCT 2024", "bitdefender": "ituser05@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel(R) Core\u2122 7 150U", "gpu": "", "ram": "16Gb", "storage": "500GB SSD", "macAddress": "5C:B2:6D:33:07:02"}, {"tagNo": "LT087", "type": "LAPTOP", "model": "DELL INSPIRON 14 7440 P186G", "user": "Roberto Alonzo", "status": "Active", "serial": "19WXS44", "datePurchased": "2024-10-09", "dateTransferred": "2024-10-17", "previousUser": "", "remarks": "BRANDNEW SINCE OCT 2024", "bitdefender": "ituser05@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel(R) Core\u2122 7 150U", "gpu": "", "ram": "16Gb", "storage": "500GB SSD", "macAddress": "5C:B2:6D:31:F8:E4"}, {"tagNo": "LT088", "type": "LAPTOP", "model": "DELL INSPIRON 14 7440 P186G", "user": "Golden Kenneth Metrillo", "status": "Active", "serial": "97WXS44", "datePurchased": "2024-10-09", "dateTransferred": "2025-01-07", "previousUser": "WLR", "remarks": "BRANDNEW SINCE OCT 2024", "bitdefender": "ituser05@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel(R) Core\u2122 7 150U", "gpu": "", "ram": "16Gb", "storage": "500GB SSD", "macAddress": "5C:B2 6D:32:D3:40"}, {"tagNo": "LT089", "type": "LAPTOP", "model": "DELL INSPIRON 14 7440 P186G", "user": "Ilene Ibanez", "status": "Active", "serial": "68WXS44", "datePurchased": "2024-10-09", "dateTransferred": "2024-10-22", "previousUser": "", "remarks": "BRANDNEW SINCE OCT 2024", "bitdefender": "ituser05@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel(R) Core\u2122 7 150U", "gpu": "", "ram": "16Gb", "storage": "500GB SSD", "macAddress": "5C:B2:6D:33:04:8C"}, {"tagNo": "LT090", "type": "LAPTOP", "model": "DELL G15 5530", "user": "Alfie Torralba", "status": "Active", "serial": "25F3Y64", "datePurchased": "2024-12-06", "dateTransferred": "2024-12-11", "previousUser": "", "remarks": "BRANDNEW SINCE DEC 2024", "bitdefender": "ituser01@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel(R) Core\u2122 I9-13900Hx 13Th Gen ", "gpu": "Geforce Rtx 4060", "ram": "32Gb", "storage": "1TB SSD", "macAddress": "E0:8F:4C:2B:8B:3A"}, {"tagNo": "LT091", "type": "LAPTOP", "model": "DELL INSPIRON 14 7440 P186G", "user": "Florita Bacud", "status": "Active", "serial": "5BYRP54", "datePurchased": "2025-03-10", "dateTransferred": "2025-04-29", "previousUser": "SGS", "remarks": "BRANDNEW SINCE MAR 2025", "bitdefender": "ituser07@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel(R) Core\u2122 7 150U", "gpu": "", "ram": "16Gb", "storage": "500GB SSD", "macAddress": "C4:47:4E:70:B0:4D"}, {"tagNo": "LT092", "type": "LAPTOP", "model": "DELL INSPIRON 14 7440 P186G", "user": "Elpidio Salvador", "status": "Active", "serial": "3BYRP54", "datePurchased": "2025-03-10", "dateTransferred": "2025-03-12", "previousUser": "", "remarks": "BRANDNEW SINCE MAR 2025", "bitdefender": "ituser07@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel(R) Core\u2122 7 150U", "gpu": "", "ram": "16Gb", "storage": "500GB SSD", "macAddress": "C4:47:4E:73:DA:4D"}, {"tagNo": "LT093", "type": "LAPTOP", "model": "DELL INSPIRON 14 5440 P185G", "user": "Sherwin Salinas", "status": "Active", "serial": "8DG6P94", "datePurchased": "2025-08-07", "dateTransferred": "2025-08-08", "previousUser": "", "remarks": "BRANDNEW SINCE AUG 2025", "bitdefender": "ituser01@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel(R) Core\u2122 7 150U", "gpu": "", "ram": "16Gb", "storage": "1TB SSD", "macAddress": "AC:F2:3C:7B:B4:BF"}, {"tagNo": "LT094", "type": "LAPTOP", "model": "DELL INSPIRON 14 5440 P185G", "user": "Elmira Galabo", "status": "Active", "serial": "4ZD6P94", "datePurchased": "2025-08-07", "dateTransferred": "", "previousUser": "", "remarks": "BRANDNEW SINCE AUG 2025", "bitdefender": "ituser01@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel(R) Core\u2122 7 150U", "gpu": "", "ram": "16Gb", "storage": "1TB SSD", "macAddress": "AC:F2:3C:9A:3A:C7"}, {"tagNo": "LT095", "type": "LAPTOP", "model": "DELL INSPIRON 14 5440 P185G", "user": "Julius Eglip", "status": "Active", "serial": "7DG6P94", "datePurchased": "2025-08-07", "dateTransferred": "2025-08-13", "previousUser": "", "remarks": "BRANDNEW SINCE AUG 2025", "bitdefender": "ituser01@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel(R) Core\u2122 7 150U", "gpu": "", "ram": "16Gb", "storage": "1TB SSD", "macAddress": "AC:F2:3C:7A:E3:09"}, {"tagNo": "LT096", "type": "LAPTOP", "model": "DELL INSPIRON 14 5440 P185G", "user": "Leah Cajegas", "status": "Active", "serial": "4WD6P94", "datePurchased": "2025-08-07", "dateTransferred": "2025-08-18", "previousUser": "", "remarks": "BRANDNEW SINCE AUG 2025", "bitdefender": "ituser03@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel(R) Core\u2122 7 150U", "gpu": "", "ram": "16Gb", "storage": "1TB SSD", "macAddress": "AC:F2:3C:7B:AC:33"}, {"tagNo": "LT097", "type": "LAPTOP", "model": "DELL INSPIRON 14 5440 P185G", "user": "Jan Melissa RS. Lansangan", "status": "Active", "serial": "CXD6P94", "datePurchased": "2025-08-07", "dateTransferred": "2025-08-18", "previousUser": "", "remarks": "BRANDNEW SINCE AUG 2025", "bitdefender": "ituser03@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel(R) Core\u2122 7 150U", "gpu": "", "ram": "16Gb", "storage": "1TB SSD", "macAddress": "AC:F2:3C:9A:4B:EF"}, {"tagNo": "LT098", "type": "LAPTOP", "model": "HP OMEN TRANSCEND LAPTOP 14-FB0097NR", "user": "Jason Raquel Santos", "status": "Active", "serial": "5CD4447KGV", "datePurchased": "2024-11-21", "dateTransferred": "", "previousUser": "", "remarks": "", "bitdefender": "jasonrs@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel Core Ultra 9 185H", "gpu": "", "ram": "32GB", "storage": "2TB SSD", "macAddress": "94:E7:0B:D9:AF:8F"}, {"tagNo": "DT099", "type": "DESKTOP", "model": "GIGABYTE A520M-K V2", "user": "Kyla Limbo", "status": "Active", "serial": "", "datePurchased": "2025-08-11", "dateTransferred": "2025-08-13", "previousUser": "", "remarks": "", "bitdefender": "ituser04@chemluxinc.com", "os": "Windows 11 Pro", "motherboard": "", "processor": "AMD Ryzen 5 5600GT", "gpu": "", "ram": "16Gb", "storage": "500GB SSD + 1TB HDD", "macAddress": ""}, {"tagNo": "LT100", "type": "LAPTOP", "model": "Dell 14 Plus DB14250", "user": "Divine C. Lastimado", "status": "Active", "serial": "1B0N8F4", "datePurchased": "2026-03-09", "dateTransferred": "2026-03-26", "previousUser": "", "remarks": "BRANDNEW SINCE MARCH 2026", "bitdefender": "ituser04@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel(R) Core\u2122 Ultra 7 256V", "gpu": "Inter(R) Arc\u2122 140V", "ram": "16Gb", "storage": "1TB SSD", "macAddress": "C8:95:CE:FC:74:D9"}, {"tagNo": "LT101", "type": "LAPTOP", "model": "Dell 14 Plus DB14250", "user": "Chrizel Joyce C. Evangelista", "status": "Active", "serial": "D90N8F4", "datePurchased": "2026-03-09", "dateTransferred": "2026-03-26", "previousUser": "", "remarks": "BRANDNEW SINCE MARCH 2026", "bitdefender": "ituser04@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel(R) Core\u2122 Ultra 7 256V", "gpu": "Inter(R) Arc\u2122 140V", "ram": "16Gb", "storage": "1TB SSD", "macAddress": "C8:95:CE:FE:F9:AC"}, {"tagNo": "LT102", "type": "LAPTOP", "model": "Dell 14 Plus DB14250", "user": "Joemer H. Galas", "status": "Active", "serial": "8S0N8F4", "datePurchased": "2026-03-09", "dateTransferred": "2026-03-27", "previousUser": "", "remarks": "BRANDNEW SINCE MARCH 2026", "bitdefender": "ituser04@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel(R) Core\u2122 Ultra 7 256V", "gpu": "Inter(R) Arc\u2122 140V", "ram": "16Gb", "storage": "1TB SSD", "macAddress": "C8:95:CE:FE:C4:7D"}, {"tagNo": "LT103", "type": "LAPTOP", "model": "Dell 14 Plus DB14250", "user": "Heidee O. Sardez", "status": "Active", "serial": "DB0N8F4", "datePurchased": "2026-03-09", "dateTransferred": "2026-03-25", "previousUser": "", "remarks": "BRANDNEW SINCE MARCH 2026", "bitdefender": "ituser04@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel(R) Core\u2122 Ultra 7 256V", "gpu": "Inter(R) Arc\u2122 140V", "ram": "16Gb", "storage": "1TB SSD", "macAddress": "C8:95:CE:FC:84:88"}, {"tagNo": "LT104", "type": "LAPTOP", "model": "Dell 14 DC14250", "user": "Ana Maria C. Demape", "status": "Active", "serial": "FSXPFF4", "datePurchased": "2026-05-22", "dateTransferred": "2026-05-22", "previousUser": "", "remarks": "BRANDNEW SINCE MAY 2026", "bitdefender": "ituser04@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel(R) Core\u2122 5 1200U", "gpu": "Inter(R) Graphics", "ram": "16Gb", "storage": "512 SSD", "macAddress": "F4:28:9D:79:1D:C5"}, {"tagNo": "LT105", "type": "LAPTOP", "model": "Dell 14 DC14250", "user": "Kim L. Salvador", "status": "Active", "serial": "1GCRFF4", "datePurchased": "2026-05-22", "dateTransferred": "2026-06-01", "previousUser": "", "remarks": "BRANDNEW SINCE MAY 2026", "bitdefender": "ituser01@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel(R) Core\u2122 5 1200U", "gpu": "Inter(R) Graphics", "ram": "16Gb", "storage": "512 SSD", "macAddress": "F4:28:9D:79:A0:91"}, {"tagNo": "LT106", "type": "LAPTOP", "model": "Dell 14 DC14250", "user": "Marcelo Jr R. Mitra", "status": "Active", "serial": "CJCRFF4", "datePurchased": "2026-05-22", "dateTransferred": "2026-05-28", "previousUser": "", "remarks": "BRANDNEW SINCE MAY 2026", "bitdefender": "ituser01@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "Intel(R) Core\u2122 5 1200U", "gpu": "Inter(R) Graphics", "ram": "16Gb", "storage": "512 SSD", "macAddress": "F4:28:9D:79:9E:BB"}, {"tagNo": "DT107", "type": "DESKTOP", "model": "MSI A520M-A Pro", "user": "Romeo V. Geron", "status": "Active", "serial": "", "datePurchased": "2026-07-14", "dateTransferred": "", "previousUser": "", "remarks": "BRANDNEW SINCE AUGUST 2026", "bitdefender": "ituser04@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "AMD Ryzen 5 5600GT", "gpu": "", "ram": "16GB", "storage": "512SSD", "macAddress": ""}, {"tagNo": "DT108", "type": "DESKTOP", "model": "ASUS B650M", "user": "Kaye B. Braco", "status": "Active", "serial": "", "datePurchased": "2026-07-14", "dateTransferred": "2026-08-04", "previousUser": "", "remarks": "BRANDNEW SINCE AUGUST 2026", "bitdefender": "ituser04@chemluxinc.com", "os": "Windows 11 Home", "motherboard": "", "processor": "AMD Ryzen 7 Pro 7745", "gpu": "AMD Radeos(TM)", "ram": "16GB", "storage": "512SSD DDR5", "macAddress": ""}], "mobile": [{"brandModel": "REDMI A7 Pro", "serial": "74409/66RE04319", "status": "Active", "currentUser": "Remareal R. Camacho", "dateReceived": "2026-07-30", "designation": "Accounting Staff", "department": "Accounting", "oldUser": "", "remarks": ""}, {"brandModel": "REDMI A7 Pro", "serial": "74409/66RF00668", "status": "Active", "currentUser": "Kaye B. Bravo", "dateReceived": "2026-07-30", "designation": "Accounting Staff", "department": "Accounting", "oldUser": "", "remarks": ""}, {"brandModel": "OPPO A5i", "serial": "E5BD9DCF", "status": "Active", "currentUser": "Leah T. Cajegas", "dateReceived": "2025-12-29", "designation": "IPM Coordinator", "department": "IPM", "oldUser": "", "remarks": ""}, {"brandModel": "OPPO A15", "serial": "58B01168", "status": "Active", "currentUser": "Regine G. Calderon", "dateReceived": "2025-11-10", "designation": "IPM Coordinator", "department": "IPM", "oldUser": "", "remarks": ""}, {"brandModel": "OPPO A3", "serial": "91D5EA3D", "status": "Active", "currentUser": "Billiard Jessie O. Namias", "dateReceived": "2025-05-27", "designation": "Logistics Driver", "department": "Logistics", "oldUser": "", "remarks": ""}, {"brandModel": "OPPO A3", "serial": "96024BDA", "status": "Active", "currentUser": "Ramil C. Dongsal", "dateReceived": "2025-05-22", "designation": "Logistics Driver", "department": "Logistics", "oldUser": "", "remarks": ""}, {"brandModel": "OPPO A3", "serial": "7DA6B1EC", "status": "Active", "currentUser": "Jerry S. Liquido", "dateReceived": "2025-05-22", "designation": "Logistics Driver", "department": "Logistics", "oldUser": "", "remarks": ""}, {"brandModel": "OPPO A3", "serial": "8B23F006", "status": "Active", "currentUser": "Rogelio Jr O. Ayson", "dateReceived": "2025-05-22", "designation": "Senior Warehouse Leadman", "department": "Logistics", "oldUser": "", "remarks": ""}, {"brandModel": "OPPO A3", "serial": "AFFD115B", "status": "Active", "currentUser": "Richard S. Madulara", "dateReceived": "2025-05-22", "designation": "Logistics Driver", "department": "Logistics", "oldUser": "", "remarks": ""}, {"brandModel": "OPPO A3", "serial": "1FCBE73B", "status": "Active", "currentUser": "Ronaldo B. Bravo", "dateReceived": "2025-05-21", "designation": "Logistics Driver", "department": "Logistics", "oldUser": "", "remarks": ""}, {"brandModel": "OPPO A3", "serial": "8BF10442", "status": "Active", "currentUser": "Crystal Joy D. Alforte", "dateReceived": "2025-05-15", "designation": "Accounting Staff I", "department": "Accounting", "oldUser": "", "remarks": ""}, {"brandModel": "OPPO A3", "serial": "728D88A3", "status": "Active", "currentUser": "Florita A. Bacud", "dateReceived": "", "designation": "Logistics In-Charge", "department": "Logistics", "oldUser": "", "remarks": ""}, {"brandModel": "OPPO A3", "serial": "6310E864", "status": "Active", "currentUser": "Mary Ann B. Garcia", "dateReceived": "2025-05-09", "designation": "Purchaser", "department": "Purchasing", "oldUser": "", "remarks": ""}, {"brandModel": "OPPO A15", "serial": "", "status": "Active", "currentUser": "Heidee O. Sardez", "dateReceived": "", "designation": "Sr. Sales Coordinator", "department": "Sales", "oldUser": "", "remarks": ""}, {"brandModel": "XIAOMI REDMI 9T", "serial": "", "status": "Active", "currentUser": "Carl Dominic B. Garan", "dateReceived": "2025-03-05", "designation": "Accounting Manager (Resigned)", "department": "Accounting", "oldUser": "", "remarks": ""}, {"brandModel": "Realme C3", "serial": "F6ONR8MZAMMIBJN85", "status": "Active", "currentUser": "Accounting Staffs", "dateReceived": "", "designation": "Spare", "department": "Spare", "oldUser": "Accounting (UNDER JES)", "remarks": ""}, {"brandModel": "Realme C3", "serial": "MZF6MFSS7HGMKV7S", "status": "Active", "currentUser": "Accounting Staffs", "dateReceived": "", "designation": "Accounting Staff", "department": "Accounting (UNDER EMG)", "oldUser": "", "remarks": ""}, {"brandModel": "Samsung A03s", "serial": "R9PT50NB1FJ", "status": "Active", "currentUser": "Justin Claire Victor", "dateReceived": "2025-06-25", "designation": "Hr & Admin Assistant", "department": "Admin", "oldUser": "SGS", "remarks": ""}, {"brandModel": "Samsung A03s", "serial": "R9HT104ANRP", "status": "Inactive", "currentUser": "No user", "dateReceived": "", "designation": "", "department": "", "oldUser": "CDA", "remarks": ""}, {"brandModel": "Samsung A03s", "serial": "", "status": "Inactive", "currentUser": "No user", "dateReceived": "", "designation": "", "department": "", "oldUser": "JES", "remarks": "Broken LCD"}, {"brandModel": "Samsung A03s", "serial": "", "status": "Inactive", "currentUser": "No user", "dateReceived": "", "designation": "", "department": "", "oldUser": "", "remarks": "Broken LCD"}, {"brandModel": "Samsung A03s", "serial": "", "status": "Inactive", "currentUser": "No user", "dateReceived": "", "designation": "", "department": "", "oldUser": "", "remarks": "No power"}, {"brandModel": "Cloudfone ThrillBoost 3", "serial": "", "status": "Inactive", "currentUser": "No user", "dateReceived": "", "designation": "", "department": "Accounting", "oldUser": "", "remarks": "No power button, outdated"}, {"brandModel": "SAMSUNG GALAXY A11", "serial": "", "status": "Active", "currentUser": "Myra S. Consul", "dateReceived": "2020-10-13", "designation": "Plant OIC", "department": "Operations", "oldUser": "", "remarks": ""}, {"brandModel": "MyPhone", "serial": "", "status": "Obsollete", "currentUser": "Monchito L. Lopez", "dateReceived": "2017-04-21", "designation": "IPM Field Service Supervisor", "department": "IPM", "oldUser": "EMG", "remarks": ""}, {"brandModel": "MyPhone", "serial": "", "status": "Obsollete", "currentUser": "John Edward Tuayon", "dateReceived": "2017-04-19", "designation": "IPM", "department": "IPM", "oldUser": "", "remarks": ""}], "printers": [{"model": "Epson - L3110", "user": "", "status": "Obselette", "serial": "X93P161014", "datePurchased": "", "remarks": ""}, {"model": "Epson - L3110", "user": "", "status": "Obselette", "serial": "X5DY126412", "datePurchased": "", "remarks": ""}, {"model": "HP - Deskjet ADV 3700", "user": "", "status": "Obselette", "serial": "CN93H6P1N5", "datePurchased": "", "remarks": ""}, {"model": "Canon - TS207", "user": "", "status": "Obselette", "serial": "AGHX48128", "datePurchased": "", "remarks": ""}, {"model": "Epson - L3210", "user": "", "status": "Obselette", "serial": "XAGM313683", "datePurchased": "", "remarks": ""}, {"model": "Canon - G2000", "user": "", "status": "Obselette", "serial": "KKEB56674", "datePurchased": "", "remarks": ""}, {"model": "Epson - L3210", "user": "", "status": "Obselette", "serial": "XAGM083814", "datePurchased": "", "remarks": ""}, {"model": "Epson - L360", "user": "", "status": "Obselette", "serial": "VGFK362193", "datePurchased": "", "remarks": ""}, {"model": "Epson L121", "user": "RRC", "status": "Active", "serial": "X9LV444545", "datePurchased": "2024-03-13", "remarks": ""}, {"model": "Canon G1730", "user": "FAB", "status": "Active", "serial": "KPHC03597", "datePurchased": "2024-07-03", "remarks": ""}, {"model": "Canon GX7070", "user": "Building 11", "status": "Active", "serial": "KNHB19054", "datePurchased": "2025-02-27", "remarks": ""}, {"model": "Brother MFC J200-Printer", "user": "Admin", "status": "Spare", "serial": "E73186K9H566859", "datePurchased": "2020-11-16", "remarks": "Old used from KBB"}, {"model": "Epson LX310", "user": "KBB", "status": "Active", "serial": "Q7CY128522", "datePurchased": "", "remarks": ""}, {"model": "Epson LX310", "user": "AJU", "status": "Spare", "serial": "Q7CY256751", "datePurchased": "2021-06-11", "remarks": ""}, {"model": "Epson LX310", "user": "CDA", "status": "Active", "serial": "Q7CY153419", "datePurchased": "", "remarks": ""}, {"model": "Epson L6490", "user": "Operations", "status": "Active", "serial": "X94H004469", "datePurchased": "2022-10-14", "remarks": "Replaced printer purge and printer head"}, {"model": "SHARP MX 3050N", "user": "Bldg 11", "status": "Active", "serial": "7E000343", "datePurchased": 2017, "remarks": "For Scan only"}, {"model": "HP Laserjet M680 ", "user": "Bldg 11", "status": "Active", "serial": "CNDXJ1F8TR", "datePurchased": "2023-08-15", "remarks": "Old use from Production / For Pullout"}, {"model": "Ricoh MP C3504ex", "user": "QA/QC - Production", "status": "Active", "serial": "C728M287583", "datePurchased": "2025-10-22", "remarks": "Free to use"}, {"model": "Canon GX7070", "user": "IPM", "status": "Active", "serial": "KNHB14899", "datePurchased": "2026-01-29", "remarks": "Brand New"}, {"model": "Canon GX7070", "user": "Admin", "status": "Active", "serial": "KNHB14914", "datePurchased": "2026-01-29", "remarks": "Brand New"}, {"model": "Epson LX310", "user": "AJU", "status": "Active", "serial": "Q7CYJ58993", "datePurchased": "2026-07-09", "remarks": "Brand New"}, {"model": "XPrinter XP-470B", "user": "Mark Cainday", "status": "Active", "serial": "470BUH20A270037", "datePurchased": "2025-04-01", "remarks": ""}], "peripherals": [{"item": "EXTENSION WIRE", "description": " 5 Meters Universal 3 Outlet", "propertyTag": 1, "status": "Active", "date": "2025-12-23", "addressTo": "Sales Office", "department": "Sales", "remarks": ""}, {"item": "EXTENSION WIRE", "description": " 5 Meters Universal 3 Outlet", "propertyTag": 2, "status": "Active", "date": "2025-12-23", "addressTo": "Sales Office", "department": "Sales", "remarks": ""}, {"item": "EXTENSION WIRE", "description": " 5 Meters Universal 3 Outlet", "propertyTag": 3, "status": "Active", "date": "2025-12-23", "addressTo": "Sales Office", "department": "Sales", "remarks": ""}, {"item": "EXTENSION WIRE", "description": " 2 Meters Universal 4 Outlet", "propertyTag": 4, "status": "Active", "date": "2025-12-23", "addressTo": "John Paul V. Dela Cruz", "department": "IT", "remarks": ""}, {"item": "MONITOR", "description": "BENQ Monitor  17'", "propertyTag": 4, "status": "Active", "date": "2021-01-04", "addressTo": "Romeo V. Geron", "department": "Purchasing", "remarks": ""}, {"item": "EXTENSION WIRE", "description": " 2 Meters Universal 4 Outlet", "propertyTag": 5, "status": "Active", "date": "2025-12-23", "addressTo": "Elmira M. Galabo", "department": "Accounting", "remarks": ""}, {"item": "EXTENSION WIRE", "description": " 5 Meters Universal 5 Outlet", "propertyTag": 6, "status": "Active", "date": "2025-12-23", "addressTo": "Conference room", "department": "Chemlux", "remarks": ""}, {"item": "EXTENSION WIRE", "description": " 5 Meters Universal 5 Outlet", "propertyTag": 7, "status": "Active", "date": "2025-12-23", "addressTo": "Conference room", "department": "Chemlux", "remarks": ""}, {"item": "MOUSE", "description": "A4Tech OP-720", "propertyTag": 8, "status": "Active", "date": "2025-12-29", "addressTo": "John Paul V. Dela Cruz", "department": "IT", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-85", "propertyTag": 9, "status": "Active", "date": "2025-12-29", "addressTo": "John Paul V. Dela Cruz", "department": "IT", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-83", "propertyTag": 10, "status": "Active", "date": "2025-12-29", "addressTo": "John Paul V. Dela Cruz", "department": "IT", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-83", "propertyTag": 12, "status": "Broken", "date": "2025-12-29", "addressTo": "IT", "department": "IT", "remarks": "Loose keys"}, {"item": "MONITOR", "description": "LG Flatron E2241V", "propertyTag": 13, "status": "Active", "date": "2025-12-29", "addressTo": "Justine Claire Victor", "department": "Admin", "remarks": ""}, {"item": "KEYBOARD & MOUSE COMBO", "description": "Logitech K235 - M170 Wireless", "propertyTag": 14, "status": "Active", "date": "2025-12-29", "addressTo": "Princess M. Bacani", "department": "IT", "remarks": ""}, {"item": "PRINTER", "description": "HP MFP M680", "propertyTag": 15, "status": "Active", "date": "2025-12-29", "addressTo": "John Paul V. Dela Cruz", "department": "IT", "remarks": ""}, {"item": "PRINTER", "description": "Brother MFC J-200", "propertyTag": 16, "status": "Spare", "date": "2025-12-29", "addressTo": "IT", "department": "IT", "remarks": ""}, {"item": "MOUSE", "description": "AOC KM160", "propertyTag": 17, "status": "Active", "date": "2025-12-29", "addressTo": "Joshua M. Malabanan", "department": "Technical Support", "remarks": ""}, {"item": "MONITOR", "description": "ASUS Monitor 17'", "propertyTag": 17, "status": "Active", "date": "2021-01-04", "addressTo": "Noraisa Sesalim", "department": "Operations", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-83", "propertyTag": 18, "status": "Active", "date": "2025-12-29", "addressTo": "Joshua M. Malabanan", "department": "Technical Support", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-85", "propertyTag": 19, "status": "Active", "date": "2021-01-04", "addressTo": "Mary-ann Garcia", "department": "Purchasing", "remarks": ""}, {"item": "MOUSE", "description": "A4Tech OP-721", "propertyTag": 19, "status": "Active", "date": "2021-01-04", "addressTo": "Mary-ann Garcia", "department": "Purchasing", "remarks": ""}, {"item": "MONITOR", "description": "AOC E970sWNL 18.5\" ", "propertyTag": 19, "status": "Active", "date": "2025-12-29", "addressTo": "Joshua M. Malabanan", "department": "Technical Support", "remarks": ""}, {"item": "MOUSE", "description": "AOC KM160", "propertyTag": 20, "status": "Active", "date": "2025-12-29", "addressTo": "Regine G. Calderon", "department": "IPM ", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-83", "propertyTag": 21, "status": "Active", "date": "2025-12-29", "addressTo": "Justine Claire Victor", "department": "Admin", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-85", "propertyTag": 22, "status": "Broken", "date": "2021-01-04", "addressTo": "IT", "department": "IT", "remarks": "hard keys"}, {"item": "MONITOR", "description": "AOC Monitor 17\"", "propertyTag": 22, "status": "Active", "date": "2025-12-29", "addressTo": "Regine G. Calderon", "department": "IPM ", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-85", "propertyTag": 23, "status": "Active", "date": "2025-12-29", "addressTo": "Mary Joy M. Matutina", "department": "IPM ", "remarks": ""}, {"item": "MOUSE", "description": "Logitech B100", "propertyTag": 24, "status": "Active", "date": "2025-12-29", "addressTo": "Mary Joy M. Matutina", "department": "IPM ", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-85", "propertyTag": 25, "status": "Active", "date": "2025-12-29", "addressTo": "Remareal R. Camacho", "department": "Accounting", "remarks": ""}, {"item": "MONITOR", "description": "AOC E970sWNL 18.5\" ", "propertyTag": 26, "status": "Active", "date": "2025-12-29", "addressTo": "Remareal R. Camacho", "department": "Accounting", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-85", "propertyTag": 27, "status": "Active", "date": "2021-01-20", "addressTo": "Dayang Shanika J. Abirin", "department": "Accounting", "remarks": ""}, {"item": "PRINTER", "description": "Epson L121", "propertyTag": 27, "status": "Active", "date": "2025-12-29", "addressTo": "Remareal R. Camacho", "department": "Accounting", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-85", "propertyTag": 28, "status": "Active", "date": "2025-12-29", "addressTo": "Almige J. Ugali", "department": "Accounting", "remarks": ""}, {"item": "MONITOR", "description": "Samsung S19E310HY 18.5\"", "propertyTag": 29, "status": "Active", "date": "2025-12-29", "addressTo": "Almige J. Ugali", "department": "Accounting", "remarks": ""}, {"item": "MOUSE", "description": "A4Tech OP-720", "propertyTag": 30, "status": "Active", "date": "2025-12-29", "addressTo": "Admin OJT", "department": "Admin OJT", "remarks": ""}, {"item": "MONITOR", "description": "AOC 21.5\" ", "propertyTag": 31, "status": "Active", "date": "2025-12-29", "addressTo": "Richard David M. Ilovino", "department": "Accounting", "remarks": ""}, {"item": "MONITOR", "description": "AOC 22B30HM22 21.5\"", "propertyTag": 32, "status": "Active", "date": "2025-12-29", "addressTo": "Elmira M. Galabo", "department": "Accounting", "remarks": ""}, {"item": "KEYBOARD & MOUSE COMBO", "description": "Logitech K235 - M170 Wireless", "propertyTag": 33, "status": "Active", "date": "2025-12-29", "addressTo": "Elmira M. Galabo", "department": "Accounting", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-85", "propertyTag": 33, "status": "Active", "date": "2021-01-18", "addressTo": "Kyle Ryan Bravo", "department": "Production", "remarks": ""}, {"item": "MOUSE", "description": "Fantech KM-100 Mouse", "propertyTag": 34, "status": "Lost", "date": "2025-12-29", "addressTo": "Spare", "department": "Spare", "remarks": "Lost"}, {"item": "KEYBOARD", "description": "Fantech KM-100 Keyboard", "propertyTag": 35, "status": "Active", "date": "2025-12-29", "addressTo": "Daryl Joy M. Ynion", "department": "Accounting", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-83", "propertyTag": 36, "status": "Active", "date": "2025-12-29", "addressTo": "Joy D. Aletre", "department": "Accounting", "remarks": ""}, {"item": "MOUSE", "description": "A4Tech OP-720", "propertyTag": 37, "status": "Active", "date": "2025-12-29", "addressTo": "Joy D. Aletre", "department": "Accounting", "remarks": ""}, {"item": "MOUSE", "description": "Uniso UOM-E900", "propertyTag": 38, "status": "Active", "date": "2025-12-29", "addressTo": "Crystal Joy D. Alforte", "department": "Accounting", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-85", "propertyTag": 39, "status": "Active", "date": "2025-12-29", "addressTo": "Crystal Joy D. Alforte", "department": "Accounting", "remarks": ""}, {"item": "MONITOR", "description": "AOC E970sWNL 18.5\" ", "propertyTag": 40, "status": "Active", "date": "2025-12-29", "addressTo": "Crystal Joy D. Alforte", "department": "Accounting", "remarks": ""}, {"item": "KEYBOARD & MOUSE COMBO", "description": "Logitech K270 - M185 Wireless", "propertyTag": 41, "status": "Spare", "date": "2025-12-29", "addressTo": "Daryl Joy M. Ynion", "department": "Accounting", "remarks": "Spare Keyboard"}, {"item": "MOUSE", "description": "A4Tech OP-720", "propertyTag": 42, "status": "Active", "date": "2025-12-29", "addressTo": "Kaye B. Bravo", "department": "Accounting", "remarks": ""}, {"item": "MONITOR", "description": "Samsung S19F355HNF 18.5\"", "propertyTag": 43, "status": "Active", "date": "2025-12-29", "addressTo": "Kaye B. Bravo", "department": "Accounting", "remarks": ""}, {"item": "MONITOR", "description": "HP P19b G4 18.5\"", "propertyTag": 44, "status": "Active", "date": "2025-12-29", "addressTo": "Jayson E. Sol", "department": "Accounting", "remarks": ""}, {"item": "MOUSE", "description": "A4Tech OP-722", "propertyTag": 44, "status": "Active", "date": "2021-01-20", "addressTo": "Justine Clare J. Victor", "department": "Admin", "remarks": ""}, {"item": "MOUSE", "description": "A4Tech OP-720", "propertyTag": 45, "status": "Active", "date": "2025-12-29", "addressTo": "Jayson E. Sol", "department": "Accounting", "remarks": ""}, {"item": "MOUSE", "description": "A4Tech OP-720", "propertyTag": 46, "status": "Active", "date": "2025-12-29", "addressTo": "Dayang Shanika J. Abirin", "department": "Accounting", "remarks": "Sligthly loose buttons, still responsive"}, {"item": "MONITOR", "description": "SAMSUNG Monitor 17'", "propertyTag": 47, "status": "Active", "date": "2021-01-20", "addressTo": "John Paul V. Dela Cruz", "department": "IT", "remarks": ""}, {"item": "MOUSE", "description": "A4Tech OP-720", "propertyTag": 47, "status": "Active", "date": "2025-12-29", "addressTo": "Justine G. Marquez", "department": "Marketing", "remarks": "unresponsive scroll"}, {"item": "MONITOR", "description": "Acer EK25IQ", "propertyTag": 48, "status": "Active", "date": "2025-12-29", "addressTo": "Jason Raquel Santos", "department": "Accounting", "remarks": ""}, {"item": "KEYBOARD & MOUSE COMBO", "description": "Logitech K270 - M185 Wireless", "propertyTag": 49, "status": "Active", "date": "2025-12-29", "addressTo": "Jason Raquel Santos", "department": "Accounting", "remarks": ""}, {"item": "PRINTER", "description": "Epson LX310", "propertyTag": 50, "status": "Spare", "date": "2025-12-29", "addressTo": "Spare", "department": "Accounting", "remarks": ""}, {"item": "PRINTER", "description": "Epson LX310", "propertyTag": 51, "status": "Active", "date": "2025-12-29", "addressTo": "Kaye B. Bravo", "department": "Accounting", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-85", "propertyTag": 51, "status": "Active", "date": "2021-01-20", "addressTo": "Leah T. Cajegas", "department": "IPM", "remarks": ""}, {"item": "PRINTER", "description": "Epson LX310", "propertyTag": 52, "status": "Active", "date": "2025-12-29", "addressTo": "Crystal Joy D. Alforte", "department": "Accounting", "remarks": ""}, {"item": "KEYBOARD & MOUSE COMBO", "description": "Logitech K220 - M150 Wireless", "propertyTag": 53, "status": "Active", "date": "2026-01-05", "addressTo": "Florita A. Bacud", "department": "Logistics", "remarks": ""}, {"item": "PRINTER", "description": "Canon G1730", "propertyTag": 54, "status": "Active", "date": "2026-01-05", "addressTo": "Florita A. Bacud", "department": "Logistics", "remarks": ""}, {"item": "MOUSE", "description": "A4Tech OP-720", "propertyTag": 55, "status": "Active", "date": "2026-01-05", "addressTo": "Noraisa M. Sesalim", "department": "Operations", "remarks": ""}, {"item": "MOUSE", "description": "A4Tech OP-720", "propertyTag": 56, "status": "Active", "date": "2026-01-05", "addressTo": "Kyle Ryan Bravo", "department": "Production", "remarks": ""}, {"item": "MONITOR", "description": "Acer K202HQL", "propertyTag": 57, "status": "Active", "date": "2026-01-05", "addressTo": "Kyle Ryan Bravo", "department": "Production", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-85", "propertyTag": 57, "status": "Active", "date": "2021-01-20", "addressTo": "Richard David M. Ilovino", "department": "Accounting", "remarks": ""}, {"item": "KEYBOARD & MOUSE COMBO", "description": "Logitech K225 - M150 Wireless", "propertyTag": 58, "status": "Active", "date": "2026-01-05", "addressTo": "Myra S. Consul", "department": "Operations", "remarks": ""}, {"item": "MONITOR", "description": "HP Monitor 18'", "propertyTag": 59, "status": "Active", "date": "2021-01-20", "addressTo": "Glenn G. Gendrano", "department": "Production", "remarks": "OLD EMG monitor"}, {"item": "MONITOR", "description": "AOC 22.5\"", "propertyTag": 59, "status": "Active", "date": "2026-01-05", "addressTo": "Myra S. Consul", "department": "Operations", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-83", "propertyTag": 60, "status": "Active", "date": "2026-01-05", "addressTo": "Kayla S. Limbo", "department": "Production", "remarks": ""}, {"item": "MOUSE", "description": "A4Tech OP-720", "propertyTag": 61, "status": "Active", "date": "2026-01-05", "addressTo": "Kayla S. Limbo", "department": "Production", "remarks": ""}, {"item": "MONITOR", "description": "AOC E1670Swu", "propertyTag": 62, "status": "Active", "date": "2026-01-05", "addressTo": "Kayla S. Limbo", "department": "Production", "remarks": ""}, {"item": "PRINTER", "description": "Epson LX310", "propertyTag": 62, "status": "Active", "date": "2021-01-20", "addressTo": "Ma. Elmira Galabo", "department": "Accounting", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-85", "propertyTag": 63, "status": "Active", "date": "2026-01-05", "addressTo": "Margie N. Gregorio", "department": "Production", "remarks": ""}, {"item": "MOUSE", "description": "A4Tech OP-720", "propertyTag": 64, "status": "Active", "date": "2026-01-05", "addressTo": "Margie N. Gregorio", "department": "Production", "remarks": ""}, {"item": "MONITOR", "description": "AOC I2280Swd", "propertyTag": 65, "status": "Active", "date": "2026-01-05", "addressTo": "Margie N. Gregorio", "department": "Production", "remarks": ""}, {"item": "KEYBOARD & MOUSE COMBO", "description": "Logitech K220 - M150 Wireless", "propertyTag": 66, "status": "Active", "date": "2026-01-05", "addressTo": "Christian Glenn G. Gendrano", "department": "Production", "remarks": ""}, {"item": "PRINTER", "description": "Ricoh MP C3504ex", "propertyTag": 67, "status": "Active", "date": "2026-01-05", "addressTo": "John Paul V. Dela Cruz", "department": "IT", "remarks": ""}, {"item": "MOUSE", "description": "A4Tech OP-720", "propertyTag": 68, "status": "Active", "date": "2026-01-05", "addressTo": "Rose Dale Alcazaren", "department": "Accounting", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-85", "propertyTag": 69, "status": "Active", "date": "2026-01-05", "addressTo": "QA-QC", "department": "Operations", "remarks": ""}, {"item": "MOUSE", "description": "A4Tech OP-720", "propertyTag": 70, "status": "Active", "date": "2026-01-05", "addressTo": "QA-QC", "department": "Operations", "remarks": ""}, {"item": "MONITOR", "description": "AOC 21\"", "propertyTag": 71, "status": "Active", "date": "2026-01-05", "addressTo": "QA-QC", "department": "Operations", "remarks": ""}, {"item": "MOUSE", "description": "A4Tech OP-720", "propertyTag": 72, "status": "Spare", "date": "2026-01-05", "addressTo": "Heidee O. Sardez", "department": "Sales", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-85", "propertyTag": 73, "status": "Active", "date": "2026-01-05", "addressTo": "Heidee O. Sardez", "department": "Sales", "remarks": ""}, {"item": "MONITOR", "description": "Samsung S19F355HNE 18.5\"", "propertyTag": 74, "status": "Active", "date": "2026-01-05", "addressTo": "Heidee O. Sardez", "department": "Sales", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-85", "propertyTag": 75, "status": "Active", "date": "2026-01-05", "addressTo": "Nora B. Garcia", "department": "Accounting", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-85", "propertyTag": 76, "status": "Broken", "date": "2026-01-05", "addressTo": "IT", "department": "IT", "remarks": "Unresponsive keys"}, {"item": "KEYBOARD", "description": "MSI MK-9132", "propertyTag": 77, "status": "Broken", "date": "2026-01-05", "addressTo": "IT", "department": "IT", "remarks": "Some key are broken"}, {"item": "MOUSE", "description": "A4Tech OP-722", "propertyTag": 77, "status": "Active", "date": "2021-01-20", "addressTo": "Almige J. Ugali", "department": "Accounting", "remarks": ""}, {"item": "KEYBOARD", "description": "AOC KM160", "propertyTag": 76, "status": "Broken", "date": "2021-01-20", "addressTo": "IT", "department": "IT", "remarks": "Unresponsive keys"}, {"item": "KEYBOARD", "description": "AOC KM160", "propertyTag": 78, "status": "Spare", "date": "2026-01-05", "addressTo": "Spare", "department": "Spare", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-85", "propertyTag": 79, "status": "Spare", "date": "2026-01-05", "addressTo": "Noraisa M. Sesalim", "department": "Operations", "remarks": ""}, {"item": "MONITOR", "description": "Samsung S19F355HNE", "propertyTag": 80, "status": "Active", "date": "2026-01-05", "addressTo": "John Paul V. Dela Cruz", "department": "IT", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-85", "propertyTag": 81, "status": "Active", "date": "2026-01-05", "addressTo": "Wilbert A. Gardon", "department": "IPM", "remarks": ""}, {"item": "PRINTER", "description": "Canon GX7070", "propertyTag": 82, "status": "Active", "date": "2026-01-30", "addressTo": "Admin", "department": "Admin", "remarks": ""}, {"item": "PRINTER", "description": "Canon GX7070", "propertyTag": 83, "status": "Active", "date": "2026-01-30", "addressTo": "IPM", "department": "IPM", "remarks": ""}, {"item": "PRINTER", "description": "Canon GX7071", "propertyTag": 84, "status": "Active", "date": "2026-01-30", "addressTo": "Accounting", "department": "Accounting", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-85", "propertyTag": 85, "status": "Active", "date": "2026-03-03", "addressTo": "Hannah Gayen V. Rabacio", "department": "IPM", "remarks": ""}, {"item": "MOUSE", "description": "A4Tech OP-720", "propertyTag": 86, "status": "Active", "date": "2026-03-03", "addressTo": "Hannah Gayen V. Rabacio", "department": "IPM", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-85", "propertyTag": 87, "status": "Active", "date": "2026-03-03", "addressTo": "Regine G. Calderon", "department": "IPM", "remarks": ""}, {"item": "MOUSE", "description": "A4Tech OP-720", "propertyTag": 88, "status": "Active", "date": "2026-03-03", "addressTo": "Leah T. Cajegas", "department": "IPM", "remarks": ""}, {"item": "PRINTER", "description": "Epson LX310", "propertyTag": 89, "status": "Active", "date": "2026-07-07", "addressTo": "Almige J. Ugali", "department": "Accounting", "remarks": ""}, {"item": "KEYBOARD", "description": "A4Tech KRS-3", "propertyTag": 90, "status": "Active", "date": "2026-08-05", "addressTo": "Romeo V. Geron", "department": "Purchsing Staff", "remarks": ""}, {"item": "MOUSE", "description": "A4Tech OP-330", "propertyTag": 91, "status": "Active", "date": "2026-08-05", "addressTo": "Romeo V. Geron", "department": "Purchsing Staff", "remarks": ""}, {"item": "MOUSE", "description": "A4Tech OP-720", "propertyTag": 92, "status": "Spare", "date": "2026-08-05", "addressTo": "IT", "department": "IT", "remarks": ""}, {"item": "KEYBOARD", "description": "AULA AC101 KB", "propertyTag": 93, "status": "Active", "date": "2026-08-14", "addressTo": "Noraisa M. Sesalim", "department": "Production", "remarks": ""}, {"item": "MOUSE", "description": "AULA AC101 MS", "propertyTag": 94, "status": "Active", "date": "2026-08-14", "addressTo": "Heidee O. Sardez", "department": "Sales", "remarks": ""}], "repair": [{"tagNo": "DT061", "type": "DESKTOP", "model": "DESKTOP", "user": "Regine Calderon", "history": "Replaced old storage to SSD"}, {"tagNo": "LT009", "type": "LAPTOP", "model": "LENOVO 81WD IDEAPAD SLIM3", "user": "Toni Rose M. Antiquado", "history": "Battery was replaced because it was draining fast"}, {"tagNo": "LT012", "type": "LAPTOP", "model": "ACER TRAVELMATE P2 TMP214-52-33WN", "user": "Hannah Gayen Randera", "history": "LCD was replaced because of the dead pixels"}, {"tagNo": "LT026", "type": "LAPTOP", "model": "ASUS X407UF-BV0527", "user": "Nora Garcia", "history": "Battery was replaced because it was draining fast and keyboard for unresposive keys"}, {"tagNo": "LT033", "type": "LAPTOP", "model": "DELL INSPIRON 15 3511", "user": "Paulin R. Gamit", "history": "Repaired crack laptop hinge"}, {"tagNo": "LT043", "type": "LAPTOP", "model": "ASUS X409JA-BV219T", "user": "Dayang Shanika Abirin", "history": "Repaired because the battery terminal connector got detached from the motherboard."}, {"tagNo": "LT066", "type": "LAPTOP", "model": "DELL INSPIRON 14 P157G", "user": "Glenn G. Gendrano", "history": "Repaired motherboard issue (corrupted BIOS) "}, {"tagNo": "DT064", "type": "DESKTOP", "model": "PRIME B250M-A", "user": "Justine Claire J. Victor", "history": "Replaced the broken Sata SSD storage and upgrade to M.2 SSD"}, {"tagNo": "LT050", "type": "LAPTOP", "model": "DELL INSPIRON 14 P157G", "user": "Mylene Amador", "history": "Repaired motherboard issue (corrupted BIOS)"}]}
+;
+
+const INK_CATALOG_SEED = [
+  {id:'mpc3503-black', name:'MP C3503 BLACK', printerModel:'RICOH MP C3504ex', color:'Black', unit:'cartridge', currentStock:1, reorderLevel:1},
+  {id:'mpc3503-magenta', name:'MP C3503 MAGENTA', printerModel:'RICOH MP C3504ex', color:'Magenta', unit:'cartridge', currentStock:1, reorderLevel:1},
+  {id:'mpc3503-yellow', name:'MP C3503 YELLOW', printerModel:'RICOH MP C3504ex', color:'Yellow', unit:'cartridge', currentStock:1, reorderLevel:1},
+  {id:'mpc3503-cyan', name:'MP C3503 CYAN', printerModel:'RICOH MP C3504ex', color:'Cyan', unit:'cartridge', currentStock:1, reorderLevel:1},
+  {id:'gi76-black', name:'GI-76 BLACK', printerModel:'CANON GX7070', color:'Black', unit:'bottle', currentStock:1, reorderLevel:2},
+  {id:'gi76-magenta', name:'GI-76 MAGENTA', printerModel:'CANON GX7070', color:'Magenta', unit:'bottle', currentStock:4, reorderLevel:2},
+  {id:'gi76-yellow', name:'GI-76 YELLOW', printerModel:'CANON GX7070', color:'Yellow', unit:'bottle', currentStock:4, reorderLevel:2},
+  {id:'gi76-cyan', name:'GI-76 CYAN', printerModel:'CANON GX7070', color:'Cyan', unit:'bottle', currentStock:2, reorderLevel:2},
+];
+const INK_PRINTER_UNITS = ['RICOH MP C3504ex — Production','CANON GX7070 — Admin','CANON GX7070 — IPM','CANON GX7070 — Accounting'];
+
+let db = null;
+let dbReady = false;
+
+const state = {
+  inventory: [],
+  mobile: [],
+  printers: [],
+  peripherals: [],
+  repair: [],
+  inkItems: [],
+  inkTx: [],
+  view: 'dashboard',
+  mainFilter: 'ALL',
+  searchTerms: {},
+};
+
+const COLLECTIONS = ['inventory','mobile','printers','peripherals','repair','inkItems','inkTx'];
+const COLLECTION_PATH = {inventory:'inventory', mobile:'mobilePhones', printers:'printers', peripherals:'peripherals', repair:'repairHistory', inkItems:'inkItems', inkTx:'inkTransactions'};
+
+function uid(){ return Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4); }
+
+async function initDb(){
+  try{
+    db = await claude.use('db');
+  }catch(e){ db = null; }
+  if(!db){
+    setLoading('Storage unavailable — showing local preview only.');
+    // fallback: just load seed into memory, no persistence
+    loadSeedIntoMemory();
+    setTimeout(boot, 300);
+    return;
+  }
+  const seededDoc = await safeGet(db.doc('meta/seedStatus'));
+  if(!seededDoc || !seededDoc.exists){
+    await runSeed();
+  }
+  subscribeAll();
+}
+
+function loadSeedIntoMemory(){
+  state.inventory = SEED.main.map(r=>({id:uid(), ...r}));
+  state.mobile = SEED.mobile.map(r=>({id:uid(), ...r}));
+  state.printers = SEED.printers.map(r=>({id:uid(), ...r}));
+  state.peripherals = SEED.peripherals.map(r=>({id:uid(), ...r}));
+  state.repair = SEED.repair.map(r=>({id:uid(), ...r}));
+  state.inkItems = INK_CATALOG_SEED.map(r=>({...r}));
+  state.inkTx = [];
+}
+
+async function safeGet(ref){
+  try{ return await ref.get(); }catch(e){ return null; }
+}
+
+async function runSeed(){
+  setLoading('Setting up your inventory (first time only)…');
+  const batches = [];
+  const pushAll = (arr, colName, mapFn) => {
+    arr.forEach(item => batches.push({colName, data: mapFn(item)}));
+  };
+  pushAll(SEED.main, 'inventory', r => ({...r, createdAt: Date.now()}));
+  pushAll(SEED.mobile, 'mobile', r => ({...r, createdAt: Date.now()}));
+  pushAll(SEED.printers, 'printers', r => ({...r, createdAt: Date.now()}));
+  pushAll(SEED.peripherals, 'peripherals', r => ({...r, createdAt: Date.now()}));
+  pushAll(SEED.repair, 'repair', r => ({...r, createdAt: Date.now()}));
+
+  let done = 0;
+  const total = batches.length + INK_CATALOG_SEED.length;
+  const CHUNK = 12;
+  for(let i=0;i<batches.length;i+=CHUNK){
+    const chunk = batches.slice(i,i+CHUNK);
+    await Promise.all(chunk.map(b => db.collection(COLLECTION_PATH[b.colName]).add(b.data).catch(()=>null)));
+    done += chunk.length;
+    setLoading(`Setting up your inventory (${done}/${total})…`);
+  }
+  // ink items seeded with fixed ids so opening balances are stable
+  for(let i=0;i<INK_CATALOG_SEED.length;i+=CHUNK){
+    const chunk = INK_CATALOG_SEED.slice(i,i+CHUNK);
+    await Promise.all(chunk.map(item => db.doc('inkItems/'+item.id).set({...item, updatedAt: Date.now()}).catch(()=>null)));
+    done += chunk.length;
+    setLoading(`Setting up your inventory (${done}/${total})…`);
+  }
+  // log opening balances as stock-in transactions
+  for(const item of INK_CATALOG_SEED){
+    if(item.currentStock > 0){
+      await db.collection('inkTransactions').add({
+        itemId:item.id, itemName:item.name, txType:'in', quantity:item.currentStock,
+        date:new Date().toISOString().slice(0,10), printer:'', remarks:'Opening balance (imported)',
+        balanceAfter:item.currentStock, createdAt:Date.now()
+      }).catch(()=>null);
+    }
+  }
+  await db.doc('meta/seedStatus').set({seeded:true, seededAt:Date.now()}).catch(()=>null);
+}
+
+function subscribeAll(){
+  let pending = COLLECTIONS.length;
+  const markLoaded = () => { pending = Math.max(0,pending-1); if(pending===0) boot(); };
+
+  db.collection('inventory').onSnapshot(snap=>{
+    state.inventory = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    render(); markLoaded();
+  }, ()=>markLoaded());
+
+  db.collection('mobilePhones').onSnapshot(snap=>{
+    state.mobile = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    render(); markLoaded();
+  }, ()=>markLoaded());
+
+  db.collection('printers').onSnapshot(snap=>{
+    state.printers = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    render(); markLoaded();
+  }, ()=>markLoaded());
+
+  db.collection('peripherals').onSnapshot(snap=>{
+    state.peripherals = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    render(); markLoaded();
+  }, ()=>markLoaded());
+
+  db.collection('repairHistory').onSnapshot(snap=>{
+    state.repair = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    render(); markLoaded();
+  }, ()=>markLoaded());
+
+  db.collection('inkItems').onSnapshot(snap=>{
+    state.inkItems = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    render(); markLoaded();
+  }, ()=>markLoaded());
+
+  db.collection('inkTransactions').onSnapshot(snap=>{
+    state.inkTx = snap.docs.map(d=>({id:d.id, ...d.data()})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    render(); markLoaded();
+  }, ()=>markLoaded());
+}
+
+function setLoading(msg){
+  const el = document.getElementById('loadingMsg');
+  if(el) el.textContent = msg;
+}
+
+let booted = false;
+function boot(){
+  if(booted) return; booted = true;
+  document.getElementById('loadingScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  buildNav();
+  render();
+}
+
+/* =========================================================================
+   CRUD helpers
+   ========================================================================= */
+async function dbAdd(colKey, data){
+  if(!db){ state[colKey].push({id:uid(), ...data}); render(); return; }
+  await db.collection(COLLECTION_PATH[colKey]).add({...data, createdAt: Date.now()});
+}
+async function dbUpdate(colKey, id, data){
+  if(!db){
+    const idx = state[colKey].findIndex(r=>r.id===id);
+    if(idx>-1) state[colKey][idx] = {...state[colKey][idx], ...data};
+    render(); return;
+  }
+  await db.doc(COLLECTION_PATH[colKey]+'/'+id).update({...data, updatedAt: Date.now()});
+}
+async function dbSet(colKey, id, data){
+  if(!db){
+    const idx = state[colKey].findIndex(r=>r.id===id);
+    if(idx>-1) state[colKey][idx] = {...data, id}; else state[colKey].push({id,...data});
+    render(); return;
+  }
+  await db.doc(COLLECTION_PATH[colKey]+'/'+id).set({...data, updatedAt: Date.now()});
+}
+async function dbDelete(colKey, id){
+  if(!db){
+    state[colKey] = state[colKey].filter(r=>r.id!==id);
+    render(); return;
+  }
+  await db.doc(COLLECTION_PATH[colKey]+'/'+id).delete();
+}
+
+function toast(msg, type){
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast'+(type?' '+type:'');
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .25s'; setTimeout(()=>el.remove(),250); }, 2600);
+}
+
+function confirmModal(title, body, onConfirm, confirmLabel){
+  openModal({
+    title, danger:true,
+    bodyHtml: `<p style="margin:0; color:var(--ink-soft); font-size:13.5px;">${body}</p>`,
+    footHtml: `
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn btn-danger" id="confirmBtn">${confirmLabel||'Delete'}</button>
+    `,
+    afterMount: (root)=>{
+      root.querySelector('#confirmBtn').addEventListener('click', async ()=>{
+        await onConfirm();
+        closeModal();
+      });
+    }
+  });
+}
+
+/* =========================================================================
+   NAV
+   ========================================================================= */
+const NAV = [
+  {group:'Overview', items:[
+    {key:'dashboard', label:'Dashboard'},
+  ]},
+  {group:'Assets', items:[
+    {key:'inventory', label:'Main Inventory', count:()=>state.inventory.length},
+    {key:'mobile', label:'Mobile Phones', count:()=>state.mobile.length},
+    {key:'printers', label:'Printers', count:()=>state.printers.length},
+    {key:'peripherals', label:'Peripherals', count:()=>state.peripherals.length},
+  ]},
+  {group:'Consumables', items:[
+    {key:'ink', label:'Ink Monitoring', count:()=>state.inkItems.length},
+  ]},
+  {group:'Records', items:[
+    {key:'repair', label:'Repair History', count:()=>state.repair.length},
+    {key:'bitdefender', label:'BitDefender Accounts'},
+  ]},
+];
+
+function buildNav(){
+  const nav = document.getElementById('navList');
+  nav.innerHTML = '';
+  NAV.forEach(group=>{
+    const lbl = document.createElement('div');
+    lbl.className = 'nav-group-label';
+    lbl.textContent = group.group;
+    nav.appendChild(lbl);
+    group.items.forEach(item=>{
+      const btn = document.createElement('button');
+      btn.className = 'nav-btn' + (state.view===item.key ? ' active':'');
+      btn.dataset.view = item.key;
+      btn.innerHTML = `<span>${item.label}</span>` + (item.count ? `<span class="cnt">${item.count()}</span>` : '');
+      btn.addEventListener('click', ()=>{ state.view = item.key; state.mainFilter='ALL'; document.getElementById('sidebar').classList.remove('open'); render(true); });
+      nav.appendChild(btn);
+    });
+  });
+}
+document.getElementById('navToggle').addEventListener('click', ()=>{
+  document.getElementById('sidebar').classList.toggle('open');
+});
+
+/* =========================================================================
+   RENDER
+   ========================================================================= */
+function esc(s){ return (s===undefined||s===null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtDate(d){ if(!d) return '—'; return d; }
+function badgeClass(status){
+  const s = (status||'').toLowerCase();
+  if(s.includes('active')) return 'badge-active';
+  if(s.includes('spare')) return 'badge-spare';
+  if(s.includes('obsol')) return 'badge-obsolete';
+  if(s.includes('lost')) return 'badge-lost';
+  if(s.includes('broken')) return 'badge-broken';
+  if(s.includes('inactive')) return 'badge-inactive';
+  return 'badge-spare';
+}
+function badge(status){ return status ? `<span class="badge ${badgeClass(status)}">${esc(status)}</span>` : '—'; }
+
+function render(rebuildNav){
+  if(rebuildNav) buildNav();
+  else{
+    document.querySelectorAll('.nav-btn').forEach(b=>{
+      b.classList.toggle('active', b.dataset.view===state.view);
+      const item = NAV.flatMap(g=>g.items).find(i=>i.key===b.dataset.view);
+      if(item && item.count){ const c=b.querySelector('.cnt'); if(c) c.textContent = item.count(); }
+    });
+  }
+  const renderer = VIEWS[state.view] || VIEWS.dashboard;
+  renderer();
+}
+
+function setTopbar(title, sub, actionsHtml, pillsHtml){
+  document.getElementById('pageTitle').textContent = title;
+  document.getElementById('pageSub').textContent = sub||'';
+  document.getElementById('topbarActions').innerHTML = actionsHtml||'';
+  const pb = document.getElementById('pillbar');
+  if(pillsHtml){ pb.style.display='flex'; pb.innerHTML = pillsHtml; } else { pb.style.display='none'; pb.innerHTML=''; }
+}
+
+/* ---------- generic searchable table view builder ---------- */
+function searchFilter(rows, term, fields){
+  if(!term) return rows;
+  const t = term.toLowerCase();
+  return rows.filter(r => fields.some(f => String(r[f]||'').toLowerCase().includes(t)));
+}
+
+/* =========================================================================
+   DASHBOARD
+   ========================================================================= */
+VIEWS_DASHBOARD_HELP = null;
+const VIEWS = {};
+
+VIEWS.dashboard = function(){
+  setTopbar('Dashboard','Overview of all tracked assets and stock');
+  const totalAssets = state.inventory.length + state.mobile.length + state.printers.length + state.peripherals.length;
+  const activeAssets = state.inventory.filter(r=>(r.status||'').toLowerCase()==='active').length
+    + state.mobile.filter(r=>(r.status||'').toLowerCase()==='active').length;
+  const lowStock = state.inkItems.filter(i=> (i.currentStock||0) <= (i.reorderLevel||0));
+  const recentRepairs = [...state.repair].slice(-5).reverse();
+  const recentTx = state.inkTx.slice(0,6);
+
+  const byType = {};
+  state.inventory.forEach(r=>{ const t=(r.type||'OTHER').toUpperCase(); byType[t]=(byType[t]||0)+1; });
+
+  const html = `
+    <div class="stat-grid">
+      <div class="stat-card accent"><div class="n">${totalAssets}</div><div class="l">Total assets tracked</div></div>
+      <div class="stat-card"><div class="n">${activeAssets}</div><div class="l">Active devices</div></div>
+      <div class="stat-card"><div class="n">${state.inkItems.reduce((s,i)=>s+(i.currentStock||0),0)}</div><div class="l">Ink units in stock</div></div>
+      <div class="stat-card ${lowStock.length?'warn':''}"><div class="n">${lowStock.length}</div><div class="l">Ink items low on stock</div></div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1.3fr 1fr; gap:16px;" class="dash-grid">
+      <div class="section-card">
+        <h4>Assets by type</h4>
+        <p class="desc">From Main Inventory</p>
+        ${Object.keys(byType).length ? Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([t,c])=>`
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:9px;">
+            <div style="width:96px; font-size:12.5px; font-weight:600; color:var(--ink-soft);">${esc(t)}</div>
+            <div style="flex:1; background:var(--accent-soft); border-radius:6px; height:9px; overflow:hidden;">
+              <div style="width:${Math.round(c/Math.max(1,state.inventory.length)*100)}%; background:var(--accent); height:100%;"></div>
+            </div>
+            <div style="width:26px; text-align:right; font-size:12.5px; font-weight:700;">${c}</div>
+          </div>`).join('') : `<p class="desc">No inventory items yet.</p>`}
+      </div>
+
+      <div class="section-card">
+        <h4>Low ink stock</h4>
+        <p class="desc">At or below reorder level</p>
+        ${lowStock.length ? lowStock.map(i=>`
+          <div style="display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid var(--border); font-size:13px;">
+            <span>${esc(i.name)}</span>
+            <span style="font-weight:700; color:var(--amber);">${i.currentStock} left</span>
+          </div>`).join('') : `<p class="desc">All ink items are stocked above reorder level.</p>`}
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px;" class="dash-grid">
+      <div class="section-card">
+        <h4>Recent ink stock activity</h4>
+        <p class="desc">Latest stock in / stock out entries</p>
+        ${recentTx.length ? recentTx.map(t=>`
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid var(--border); font-size:12.5px;">
+            <span>${esc(t.itemName)} ${t.printer?('· '+esc(t.printer)):''}</span>
+            <span class="stock-flow-badge" style="color:${t.txType==='in'?'var(--accent)':'var(--amber)'}">${t.txType==='in'?'+':'−'}${t.quantity}</span>
+          </div>`).join('') : `<p class="desc">No stock movements logged yet.</p>`}
+      </div>
+      <div class="section-card">
+        <h4>Recent repair history</h4>
+        <p class="desc">Latest logged repairs</p>
+        ${recentRepairs.length ? recentRepairs.map(r=>`
+          <div style="padding:7px 0; border-bottom:1px solid var(--border); font-size:12.5px;">
+            <strong>${esc(r.tagNo||'—')}</strong> · ${esc(r.model||'')} — ${esc(r.history||'')}
+          </div>`).join('') : `<p class="desc">No repairs logged yet.</p>`}
+      </div>
+    </div>
+  `;
+  document.getElementById('content').innerHTML = html;
+};
+
+/* =========================================================================
+   MAIN INVENTORY
+   ========================================================================= */
+const INVENTORY_TYPES = ['ALL','LAPTOP','DESKTOP','OTHER'];
+
+VIEWS.inventory = function(){
+  const term = state.searchTerms.inventory || '';
+  setTopbar('Main Inventory', `${state.inventory.length} devices tracked — laptops &amp; desktops`,
+    `<div class="search-box">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input type="text" id="invSearch" placeholder="Search tag, model, user, serial…" value="${esc(term)}">
+    </div>
+    <button class="btn btn-primary" id="addInvBtn">+ Add device</button>`,
+    INVENTORY_TYPES.map(t=>`<button class="pill ${state.mainFilter===t?'active':''}" data-type="${t}">${t==='ALL'?'All types':t.charAt(0)+t.slice(1).toLowerCase()}</button>`).join('')
+  );
+
+  let rows = state.inventory;
+  if(state.mainFilter!=='ALL'){
+    if(state.mainFilter==='OTHER') rows = rows.filter(r=>!['LAPTOP','DESKTOP'].includes((r.type||'').toUpperCase()));
+    else rows = rows.filter(r=>(r.type||'').toUpperCase()===state.mainFilter);
+  }
+  rows = searchFilter(rows, term, ['tagNo','model','user','serial','previousUser','remarks','bitdefender']);
+
+  const tableHtml = rows.length ? `
+    <div class="table-wrap"><div class="scroll-x"><table>
+      <thead><tr>
+        <th>Tag No.</th><th>Type</th><th>Model</th><th>Current user</th><th>Status</th><th>Serial</th><th>Purchased</th><th></th>
+      </tr></thead>
+      <tbody>
+        ${rows.map(r=>`
+          <tr>
+            <td class="mono">${esc(r.tagNo)||'—'}</td>
+            <td>${esc(r.type)||'—'}</td>
+            <td>${esc(r.model)||'—'}</td>
+            <td>${esc(r.user)||'—'}</td>
+            <td>${badge(r.status)}</td>
+            <td class="mono">${esc(r.serial)||'—'}</td>
+            <td>${fmtDate(r.datePurchased)}</td>
+            <td><div class="rowcell-actions">
+              <button class="icon-btn" data-view-inv="${r.id}" title="View details">${iconEye()}</button>
+              <button class="icon-btn" data-log-repair="${r.id}" title="Log repair">${iconWrench()}</button>
+              <button class="icon-btn" data-edit-inv="${r.id}" title="Edit">${iconEdit()}</button>
+              <button class="icon-btn danger" data-del-inv="${r.id}" title="Delete">${iconTrash()}</button>
+            </div></td>
+          </tr>`).join('')}
+      </tbody>
+    </table></div></div>
+  ` : emptyState('No devices found', 'Try a different search or add a new device.');
+
+  document.getElementById('content').innerHTML = tableHtml;
+
+  document.getElementById('invSearch').addEventListener('input', e=>{ state.searchTerms.inventory = e.target.value; render(); positionCaretEnd('invSearch'); });
+  document.getElementById('addInvBtn').addEventListener('click', ()=>openInventoryForm());
+  document.querySelectorAll('[data-type]').forEach(b=>b.addEventListener('click', ()=>{ state.mainFilter=b.dataset.type; render(); }));
+  document.querySelectorAll('[data-edit-inv]').forEach(b=>b.addEventListener('click', ()=>openInventoryForm(state.inventory.find(r=>r.id===b.dataset.editInv))));
+  document.querySelectorAll('[data-view-inv]').forEach(b=>b.addEventListener('click', ()=>viewInventoryDetail(state.inventory.find(r=>r.id===b.dataset.viewInv))));
+  document.querySelectorAll('[data-log-repair]').forEach(b=>b.addEventListener('click', ()=>openQuickRepairForm(state.inventory.find(r=>r.id===b.dataset.logRepair))));
+  document.querySelectorAll('[data-del-inv]').forEach(b=>b.addEventListener('click', ()=>{
+    const item = state.inventory.find(r=>r.id===b.dataset.delInv);
+    confirmModal('Delete device?', `This permanently removes <strong>${esc(item.tagNo||item.model||'this device')}</strong> from Main Inventory.`, async ()=>{
+      await dbDelete('inventory', item.id); toast('Device deleted');
+    });
+  }));
+};
+
+function viewInventoryDetail(item, allowEdit){
+  if(!item) return;
+  if(allowEdit === undefined) allowEdit = true;
+  const fields = [
+    ['Tag No.','tagNo'],['Type','type'],['Model','model'],['Status','status'],
+    ['Current user','user'],['Previous user','previousUser'],['Serial / service tag','serial'],
+    ['Date purchased','datePurchased'],['Date transferred','dateTransferred'],
+    ['Operating system','os'],['Processor','processor'],['GPU','gpu'],['RAM','ram'],['Storage','storage'],
+    ['Motherboard','motherboard'],['MAC address','macAddress'],['BitDefender account','bitdefender'],
+  ];
+  openModal({
+    title: item.tagNo || item.model || 'Device details',
+    bodyHtml: `
+      <div class="kv-list">
+        ${fields.map(([l,k])=>`<div class="k">${l}</div><div class="v">${esc(item[k])||'—'}</div>`).join('')}
+      </div>
+      ${item.remarks ? `<div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--border);"><div class="k" style="margin-bottom:4px;">Remarks</div><div class="v" style="font-weight:400;">${esc(item.remarks)}</div></div>` : ''}
+    `,
+    footHtml: `<button class="btn" data-close>Close</button>${allowEdit ? `<button class="btn btn-primary" id="editFromView">Edit</button>` : ''}`,
+    afterMount:(root)=>{ const editBtn = root.querySelector('#editFromView'); if(editBtn) editBtn.addEventListener('click', ()=>{ closeModal(); openInventoryForm(item); }); }
+  });
+}
+
+function openInventoryForm(item){
+  const isEdit = !!item;
+  item = item || {};
+  openModal({
+    title: isEdit ? 'Edit device' : 'Add device',
+    bodyHtml: `
+      <div class="form-grid">
+        <div class="field"><label>Tag No.</label><input id="f_tagNo" value="${esc(item.tagNo)}" placeholder="e.g. LT024"></div>
+        <div class="field"><label>Type</label>
+          <select id="f_type">
+            ${['LAPTOP','DESKTOP','OTHER'].map(t=>`<option ${item.type===t?'selected':''}>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field"><label>Model</label><input id="f_model" value="${esc(item.model)}"></div>
+        <div class="field"><label>Status</label>
+          <select id="f_status">${['Active','Spare','Obsolete','Lost'].map(s=>`<option ${item.status===s?'selected':''}>${s}</option>`).join('')}</select>
+        </div>
+        <div class="field"><label>Current user</label><input id="f_user" value="${esc(item.user)}"></div>
+        <div class="field"><label>Previous user</label><input id="f_previousUser" value="${esc(item.previousUser)}"></div>
+        <div class="field"><label>Serial / service tag</label><input id="f_serial" value="${esc(item.serial)}"></div>
+        <div class="field"><label>BitDefender account (email)</label><input id="f_bitdefender" value="${esc(item.bitdefender)}"></div>
+        <div class="field"><label>Date purchased</label><input type="date" id="f_datePurchased" value="${esc(item.datePurchased)}"></div>
+        <div class="field"><label>Date transferred</label><input type="date" id="f_dateTransferred" value="${esc(item.dateTransferred)}"></div>
+        <div class="field"><label>Operating system</label><input id="f_os" value="${esc(item.os)}"></div>
+        <div class="field"><label>Processor</label><input id="f_processor" value="${esc(item.processor)}"></div>
+        <div class="field"><label>GPU</label><input id="f_gpu" value="${esc(item.gpu)}"></div>
+        <div class="field"><label>RAM</label><input id="f_ram" value="${esc(item.ram)}"></div>
+        <div class="field"><label>Storage</label><input id="f_storage" value="${esc(item.storage)}"></div>
+        <div class="field"><label>MAC address</label><input id="f_macAddress" value="${esc(item.macAddress)}"></div>
+        <div class="field full"><label>Remarks</label><textarea id="f_remarks">${esc(item.remarks)}</textarea></div>
+      </div>
+    `,
+    footHtml: `<button class="btn" data-close>Cancel</button><button class="btn btn-primary" id="saveBtn">${isEdit?'Save changes':'Add device'}</button>`,
+    afterMount:(root)=>{
+      root.querySelector('#saveBtn').addEventListener('click', async ()=>{
+        const data = {
+          tagNo: val('f_tagNo'), type: val('f_type'), model: val('f_model'), status: val('f_status'),
+          user: val('f_user'), previousUser: val('f_previousUser'), serial: val('f_serial'),
+          bitdefender: val('f_bitdefender'), datePurchased: val('f_datePurchased'), dateTransferred: val('f_dateTransferred'),
+          os: val('f_os'), processor: val('f_processor'), gpu: val('f_gpu'), ram: val('f_ram'), storage: val('f_storage'),
+          macAddress: val('f_macAddress'), remarks: val('f_remarks'),
+        };
+        if(!data.model && !data.tagNo){ toast('Add at least a tag number or model', 'err'); return; }
+        if(isEdit) await dbUpdate('inventory', item.id, data); else await dbAdd('inventory', data);
+        toast(isEdit ? 'Device updated' : 'Device added', 'ok');
+        closeModal();
+      });
+    }
+  });
+}
+
+/* =========================================================================
+   MOBILE PHONES
+   ========================================================================= */
+VIEWS.mobile = function(){
+  const term = state.searchTerms.mobile || '';
+  setTopbar('Mobile Phones', `${state.mobile.length} phones tracked`,
+    `<div class="search-box">${searchIcon()}<input type="text" id="mobSearch" placeholder="Search brand, user, serial…" value="${esc(term)}"></div>
+     <button class="btn btn-primary" id="addMobBtn">+ Add phone</button>`
+  );
+  let rows = searchFilter(state.mobile, term, ['brandModel','currentUser','serial','department','designation']);
+  const html = rows.length ? `
+    <div class="table-wrap"><div class="scroll-x"><table>
+      <thead><tr><th>Brand / model</th><th>Serial</th><th>Current user</th><th>Department</th><th>Status</th><th>Received</th><th></th></tr></thead>
+      <tbody>${rows.map(r=>`
+        <tr>
+          <td>${esc(r.brandModel)||'—'}</td>
+          <td class="mono">${esc(r.serial)||'—'}</td>
+          <td>${esc(r.currentUser)||'—'}</td>
+          <td>${esc(r.department)||'—'}</td>
+          <td>${badge(r.status)}</td>
+          <td>${fmtDate(r.dateReceived)}</td>
+          <td><div class="rowcell-actions">
+            <button class="icon-btn" data-edit="${r.id}" title="Edit">${iconEdit()}</button>
+            <button class="icon-btn danger" data-del="${r.id}" title="Delete">${iconTrash()}</button>
+          </div></td>
+        </tr>`).join('')}</tbody>
+    </table></div></div>
+  ` : emptyState('No phones found', 'Try a different search or add a new phone.');
+  document.getElementById('content').innerHTML = html;
+
+  document.getElementById('mobSearch').addEventListener('input', e=>{ state.searchTerms.mobile=e.target.value; render(); positionCaretEnd('mobSearch'); });
+  document.getElementById('addMobBtn').addEventListener('click', ()=>openMobileForm());
+  document.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click', ()=>openMobileForm(state.mobile.find(r=>r.id===b.dataset.edit))));
+  document.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click', ()=>{
+    const item = state.mobile.find(r=>r.id===b.dataset.del);
+    confirmModal('Delete phone?', `Remove <strong>${esc(item.brandModel||'this phone')}</strong> (${esc(item.serial||'')}) permanently?`, async ()=>{
+      await dbDelete('mobile', item.id); toast('Phone deleted');
+    });
+  }));
+};
+
+function openMobileForm(item){
+  const isEdit = !!item; item = item||{};
+  openModal({
+    title: isEdit?'Edit phone':'Add phone',
+    bodyHtml:`
+      <div class="form-grid">
+        <div class="field"><label>Brand / model</label><input id="f_brandModel" value="${esc(item.brandModel)}"></div>
+        <div class="field"><label>Serial number</label><input id="f_serial" value="${esc(item.serial)}"></div>
+        <div class="field"><label>Status</label><select id="f_status">${['Active','Inactive','Obsolete'].map(s=>`<option ${item.status===s?'selected':''}>${s}</option>`).join('')}</select></div>
+        <div class="field"><label>Current user</label><input id="f_currentUser" value="${esc(item.currentUser)}"></div>
+        <div class="field"><label>Old user</label><input id="f_oldUser" value="${esc(item.oldUser)}"></div>
+        <div class="field"><label>Designation</label><input id="f_designation" value="${esc(item.designation)}"></div>
+        <div class="field"><label>Department</label><input id="f_department" value="${esc(item.department)}"></div>
+        <div class="field"><label>Date received</label><input type="date" id="f_dateReceived" value="${esc(item.dateReceived)}"></div>
+        <div class="field full"><label>Remarks</label><textarea id="f_remarks">${esc(item.remarks)}</textarea></div>
+      </div>`,
+    footHtml:`<button class="btn" data-close>Cancel</button><button class="btn btn-primary" id="saveBtn">${isEdit?'Save changes':'Add phone'}</button>`,
+    afterMount:(root)=>{
+      root.querySelector('#saveBtn').addEventListener('click', async ()=>{
+        const data = {brandModel:val('f_brandModel'),serial:val('f_serial'),status:val('f_status'),currentUser:val('f_currentUser'),
+          oldUser:val('f_oldUser'),designation:val('f_designation'),department:val('f_department'),dateReceived:val('f_dateReceived'),remarks:val('f_remarks')};
+        if(!data.brandModel){ toast('Add a brand / model', 'err'); return; }
+        if(isEdit) await dbUpdate('mobile', item.id, data); else await dbAdd('mobile', data);
+        toast(isEdit?'Phone updated':'Phone added','ok'); closeModal();
+      });
+    }
+  });
+}
+
+/* =========================================================================
+   PRINTERS
+   ========================================================================= */
+VIEWS.printers = function(){
+  const term = state.searchTerms.printers || '';
+  setTopbar('Printers', `${state.printers.length} printer units tracked`,
+    `<div class="search-box">${searchIcon()}<input type="text" id="prtSearch" placeholder="Search model, user, serial…" value="${esc(term)}"></div>
+     <button class="btn btn-primary" id="addPrtBtn">+ Add printer</button>`
+  );
+  let rows = searchFilter(state.printers, term, ['model','user','serial']);
+  const html = rows.length ? `
+    <div class="table-wrap"><div class="scroll-x"><table>
+      <thead><tr><th>Model</th><th>Assigned user</th><th>Status</th><th>Serial</th><th>Purchased</th><th></th></tr></thead>
+      <tbody>${rows.map(r=>`
+        <tr>
+          <td>${esc(r.model)||'—'}</td>
+          <td>${esc(r.user)||'—'}</td>
+          <td>${badge(r.status)}</td>
+          <td class="mono">${esc(r.serial)||'—'}</td>
+          <td>${fmtDate(r.datePurchased)}</td>
+          <td><div class="rowcell-actions">
+            <button class="icon-btn" data-edit="${r.id}" title="Edit">${iconEdit()}</button>
+            <button class="icon-btn danger" data-del="${r.id}" title="Delete">${iconTrash()}</button>
+          </div></td>
+        </tr>`).join('')}</tbody>
+    </table></div></div>
+  ` : emptyState('No printers found', 'Try a different search or add a new printer.');
+  document.getElementById('content').innerHTML = html;
+
+  document.getElementById('prtSearch').addEventListener('input', e=>{ state.searchTerms.printers=e.target.value; render(); positionCaretEnd('prtSearch'); });
+  document.getElementById('addPrtBtn').addEventListener('click', ()=>openPrinterForm());
+  document.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click', ()=>openPrinterForm(state.printers.find(r=>r.id===b.dataset.edit))));
+  document.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click', ()=>{
+    const item = state.printers.find(r=>r.id===b.dataset.del);
+    confirmModal('Delete printer?', `Remove <strong>${esc(item.model||'this printer')}</strong> permanently?`, async ()=>{
+      await dbDelete('printers', item.id); toast('Printer deleted');
+    });
+  }));
+};
+
+function openPrinterForm(item){
+  const isEdit=!!item; item=item||{};
+  openModal({
+    title: isEdit?'Edit printer':'Add printer',
+    bodyHtml:`
+      <div class="form-grid">
+        <div class="field"><label>Model</label><input id="f_model" value="${esc(item.model)}"></div>
+        <div class="field"><label>Status</label><select id="f_status">${['Active','Spare','Obsolete'].map(s=>`<option ${item.status===s?'selected':''}>${s}</option>`).join('')}</select></div>
+        <div class="field"><label>Assigned user</label><input id="f_user" value="${esc(item.user)}"></div>
+        <div class="field"><label>Serial / service tag</label><input id="f_serial" value="${esc(item.serial)}"></div>
+        <div class="field"><label>Date purchased</label><input type="date" id="f_datePurchased" value="${esc(item.datePurchased)}"></div>
+        <div class="field full"><label>Remarks</label><textarea id="f_remarks">${esc(item.remarks)}</textarea></div>
+      </div>`,
+    footHtml:`<button class="btn" data-close>Cancel</button><button class="btn btn-primary" id="saveBtn">${isEdit?'Save changes':'Add printer'}</button>`,
+    afterMount:(root)=>{
+      root.querySelector('#saveBtn').addEventListener('click', async ()=>{
+        const data={model:val('f_model'),status:val('f_status'),user:val('f_user'),serial:val('f_serial'),datePurchased:val('f_datePurchased'),remarks:val('f_remarks')};
+        if(!data.model){ toast('Add a model name', 'err'); return; }
+        if(isEdit) await dbUpdate('printers', item.id, data); else await dbAdd('printers', data);
+        toast(isEdit?'Printer updated':'Printer added','ok'); closeModal();
+      });
+    }
+  });
+}
+
+/* =========================================================================
+   PERIPHERALS
+   ========================================================================= */
+VIEWS.peripherals = function(){
+  const term = state.searchTerms.peripherals || '';
+  setTopbar('Peripherals', `${state.peripherals.length} items tracked`,
+    `<div class="search-box">${searchIcon()}<input type="text" id="perSearch" placeholder="Search item, department…" value="${esc(term)}"></div>
+     <button class="btn btn-primary" id="addPerBtn">+ Add item</button>`
+  );
+  let rows = searchFilter(state.peripherals, term, ['item','description','addressTo','department','propertyTag']);
+  const html = rows.length ? `
+    <div class="table-wrap"><div class="scroll-x"><table>
+      <thead><tr><th>Item</th><th>Description</th><th>Tag #</th><th>Status</th><th>Assigned to</th><th>Department</th><th>Date</th><th></th></tr></thead>
+      <tbody>${rows.map(r=>`
+        <tr>
+          <td>${esc(r.item)||'—'}</td>
+          <td>${esc(r.description)||'—'}</td>
+          <td class="mono">${esc(r.propertyTag)||'—'}</td>
+          <td>${badge(r.status)}</td>
+          <td>${esc(r.addressTo)||'—'}</td>
+          <td>${esc(r.department)||'—'}</td>
+          <td>${fmtDate(r.date)}</td>
+          <td><div class="rowcell-actions">
+            <button class="icon-btn" data-edit="${r.id}" title="Edit">${iconEdit()}</button>
+            <button class="icon-btn danger" data-del="${r.id}" title="Delete">${iconTrash()}</button>
+          </div></td>
+        </tr>`).join('')}</tbody>
+    </table></div></div>
+  ` : emptyState('No peripherals found', 'Try a different search or add a new item.');
+  document.getElementById('content').innerHTML = html;
+
+  document.getElementById('perSearch').addEventListener('input', e=>{ state.searchTerms.peripherals=e.target.value; render(); positionCaretEnd('perSearch'); });
+  document.getElementById('addPerBtn').addEventListener('click', ()=>openPeripheralForm());
+  document.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click', ()=>openPeripheralForm(state.peripherals.find(r=>r.id===b.dataset.edit))));
+  document.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click', ()=>{
+    const item = state.peripherals.find(r=>r.id===b.dataset.del);
+    confirmModal('Delete item?', `Remove <strong>${esc(item.item||'this item')}</strong> permanently?`, async ()=>{
+      await dbDelete('peripherals', item.id); toast('Item deleted');
+    });
+  }));
+};
+
+function openPeripheralForm(item){
+  const isEdit=!!item; item=item||{};
+  openModal({
+    title: isEdit?'Edit peripheral':'Add peripheral',
+    bodyHtml:`
+      <div class="form-grid">
+        <div class="field"><label>Item</label><input id="f_item" value="${esc(item.item)}"></div>
+        <div class="field"><label>Property tag #</label><input id="f_propertyTag" value="${esc(item.propertyTag)}"></div>
+        <div class="field full"><label>Description</label><input id="f_description" value="${esc(item.description)}"></div>
+        <div class="field"><label>Status</label><select id="f_status">${['Active','Spare','Broken','Lost'].map(s=>`<option ${item.status===s?'selected':''}>${s}</option>`).join('')}</select></div>
+        <div class="field"><label>Date</label><input type="date" id="f_date" value="${esc(item.date)}"></div>
+        <div class="field"><label>Assigned to</label><input id="f_addressTo" value="${esc(item.addressTo)}"></div>
+        <div class="field"><label>Department</label><input id="f_department" value="${esc(item.department)}"></div>
+        <div class="field full"><label>Remarks</label><textarea id="f_remarks">${esc(item.remarks)}</textarea></div>
+      </div>`,
+    footHtml:`<button class="btn" data-close>Cancel</button><button class="btn btn-primary" id="saveBtn">${isEdit?'Save changes':'Add item'}</button>`,
+    afterMount:(root)=>{
+      root.querySelector('#saveBtn').addEventListener('click', async ()=>{
+        const data={item:val('f_item'),propertyTag:val('f_propertyTag'),description:val('f_description'),status:val('f_status'),date:val('f_date'),addressTo:val('f_addressTo'),department:val('f_department'),remarks:val('f_remarks')};
+        if(!data.item){ toast('Add an item name', 'err'); return; }
+        if(isEdit) await dbUpdate('peripherals', item.id, data); else await dbAdd('peripherals', data);
+        toast(isEdit?'Item updated':'Item added','ok'); closeModal();
+      });
+    }
+  });
+}
+
+/* =========================================================================
+   REPAIR HISTORY
+   ========================================================================= */
+VIEWS.repair = function(){
+  const term = state.searchTerms.repair || '';
+  setTopbar('Repair History', `${state.repair.length} repair records`,
+    `<div class="search-box">${searchIcon()}<input type="text" id="repSearch" placeholder="Search tag, model, notes…" value="${esc(term)}"></div>`
+  );
+  let rows = searchFilter(state.repair, term, ['tagNo','model','user','history']);
+  rows = [...rows].reverse();
+  const html = rows.length ? `
+    <div class="table-wrap"><div class="scroll-x"><table>
+      <thead><tr><th>Tag No.</th><th>Type</th><th>Model</th><th>User</th><th>Notes</th><th></th></tr></thead>
+      <tbody>${rows.map(r=>`
+        <tr>
+          <td class="mono">${r.tagNo && state.inventory.find(d=>d.tagNo===r.tagNo) ? `<span class="tag-link" data-goto-inv="${esc(r.tagNo)}" role="button" tabindex="0">${esc(r.tagNo)}</span>` : (esc(r.tagNo)||'—')}</td>
+          <td>${esc(r.type)||'—'}</td>
+          <td>${esc(r.model)||'—'}</td>
+          <td>${esc(r.user)||'—'}</td>
+          <td>${esc(r.history)||'—'}</td>
+          <td><div class="rowcell-actions">
+            <button class="icon-btn" data-edit="${r.id}" title="Edit">${iconEdit()}</button>
+            <button class="icon-btn danger" data-del="${r.id}" title="Delete">${iconTrash()}</button>
+          </div></td>
+        </tr>`).join('')}</tbody>
+    </table></div></div>
+  ` : emptyState('No repair records', 'Log a repair to start building history.');
+  document.getElementById('content').innerHTML = html;
+
+  document.getElementById('repSearch').addEventListener('input', e=>{ state.searchTerms.repair=e.target.value; render(); positionCaretEnd('repSearch'); });
+  document.querySelectorAll('[data-goto-inv]').forEach(b=>{
+    const openIt = (e)=>{
+      e.preventDefault();
+      const device = state.inventory.find(d=>d.tagNo===b.dataset.gotoInv);
+      if(!device){ toast('That device is no longer in Main Inventory', 'err'); return; }
+      viewInventoryDetail(device, false);
+    };
+    b.addEventListener('click', openIt);
+    b.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') openIt(e); });
+  });
+  document.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click', ()=>openRepairForm(state.repair.find(r=>r.id===b.dataset.edit))));
+  document.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click', ()=>{
+    const item = state.repair.find(r=>r.id===b.dataset.del);
+    confirmModal('Delete record?', `Remove this repair record for <strong>${esc(item.tagNo||item.model||'this device')}</strong>?`, async ()=>{
+      await dbDelete('repair', item.id); toast('Record deleted');
+    });
+  }));
+};
+
+function openRepairForm(item){
+  const isEdit=!!item; item=item||{};
+  const matched = state.inventory.find(d=>d.tagNo && item.tagNo && d.tagNo===item.tagNo);
+  openModal({
+    title: isEdit?'Edit repair record':'Log repair',
+    bodyHtml:`
+      <div class="form-grid">
+        <div class="field"><label>Tag No. <span style="font-weight:400; color:var(--muted);">(links to Main Inventory)</span></label>
+          <input id="f_tagNo" list="tagList" value="${esc(item.tagNo)}" placeholder="e.g. LT009">
+          <datalist id="tagList">${state.inventory.map(d=>`<option value="${esc(d.tagNo)}">`).join('')}</datalist>
+        </div>
+        <div class="field"><label>Type</label><input id="f_type" value="${esc(item.type || (matched?matched.type:''))}"></div>
+        <div class="field"><label>Model</label><input id="f_model" value="${esc(item.model || (matched?matched.model:''))}"></div>
+        <div class="field"><label>User</label><input id="f_user" value="${esc(item.user || (matched?matched.user:''))}"></div>
+        <div class="field full"><label>What was done</label><textarea id="f_history" placeholder="e.g. Replaced battery, cleaned fan…">${esc(item.history)}</textarea></div>
+      </div>`,
+    footHtml:`<button class="btn" data-close>Cancel</button><button class="btn btn-primary" id="saveBtn">${isEdit?'Save changes':'Log repair'}</button>`,
+    afterMount:(root)=>{
+      root.querySelector('#saveBtn').addEventListener('click', async ()=>{
+        const data={tagNo:val('f_tagNo'),type:val('f_type'),model:val('f_model'),user:val('f_user'),history:val('f_history')};
+        if(!data.history){ toast('Describe what was done', 'err'); return; }
+        if(isEdit) await dbUpdate('repair', item.id, data); else await dbAdd('repair', data);
+        toast(isEdit?'Record updated':'Repair logged','ok'); closeModal();
+      });
+    }
+  });
+}
+
+function openQuickRepairForm(device){
+  if(!device){ toast('Device not found', 'err'); return; }
+  openModal({
+    title: `Log repair — ${device.tagNo || device.model || 'device'}`,
+    bodyHtml:`
+      <div class="kv-list" style="margin-bottom:14px;">
+        <div class="k">Tag No.</div><div class="v">${esc(device.tagNo)||'—'}</div>
+        <div class="k">Type</div><div class="v">${esc(device.type)||'—'}</div>
+        <div class="k">Model</div><div class="v">${esc(device.model)||'—'}</div>
+        <div class="k">User</div><div class="v">${esc(device.user)||'—'}</div>
+      </div>
+      <div class="field">
+        <label>What was done</label>
+        <textarea id="f_history" placeholder="e.g. Replaced battery, cleaned fan…" autofocus></textarea>
+      </div>
+    `,
+    footHtml:`<button class="btn" data-close>Cancel</button><button class="btn btn-primary" id="saveBtn">Log repair</button>`,
+    afterMount:(root)=>{
+      root.querySelector('#f_history').focus();
+      root.querySelector('#saveBtn').addEventListener('click', async ()=>{
+        const history = val('f_history');
+        if(!history){ toast('Describe what was done', 'err'); return; }
+        await dbAdd('repair', {tagNo:device.tagNo||'', type:device.type||'', model:device.model||'', user:device.user||'', history});
+        toast('Repair logged','ok'); closeModal();
+      });
+    }
+  });
+}
+
+/* =========================================================================
+   INK MONITORING  (stock catalog + stock in/out ledger)
+   ========================================================================= */
+VIEWS.ink = function(){
+  const totalStock = state.inkItems.reduce((s,i)=>s+(i.currentStock||0),0);
+  const lowCount = state.inkItems.filter(i=>(i.currentStock||0) <= (i.reorderLevel||0)).length;
+
+  setTopbar('Ink Monitoring', 'Cartridge / bottle stock levels and full stock-in / stock-out history',
+    `<button class="btn" id="addInkItemBtn">+ New ink item</button>
+     <button class="btn btn-primary" id="logTxBtn">+ Log stock in / out</button>`
+  );
+
+  const html = `
+    <div class="stat-grid">
+      <div class="stat-card accent"><div class="n">${state.inkItems.length}</div><div class="l">Ink item types</div></div>
+      <div class="stat-card"><div class="n">${totalStock}</div><div class="l">Total units in stock</div></div>
+      <div class="stat-card ${lowCount?'warn':''}"><div class="n">${lowCount}</div><div class="l">At/below reorder level</div></div>
+      <div class="stat-card"><div class="n">${state.inkTx.length}</div><div class="l">Logged transactions</div></div>
+    </div>
+
+    <div class="table-wrap">
+      <div style="padding:14px 16px 4px; display:flex; justify-content:space-between; align-items:center;">
+        <strong style="font-size:13.5px;">Current stock</strong>
+      </div>
+      <div class="scroll-x"><table>
+        <thead><tr><th>Item</th><th>Compatible printer</th><th>Unit</th><th class="num">Current stock</th><th class="num">Reorder level</th><th></th></tr></thead>
+        <tbody>${state.inkItems.length ? state.inkItems.map(i=>`
+          <tr>
+            <td><strong>${esc(i.name)}</strong></td>
+            <td>${esc(i.printerModel)||'—'}</td>
+            <td>${esc(i.unit)||'—'}</td>
+            <td class="num" style="font-weight:700; ${(i.currentStock||0)<=(i.reorderLevel||0)?'color:var(--amber);':''}">${i.currentStock||0}</td>
+            <td class="num">${i.reorderLevel||0}</td>
+            <td><div class="rowcell-actions">
+              <button class="icon-btn" data-edit-ink="${i.id}" title="Edit item">${iconEdit()}</button>
+              <button class="icon-btn danger" data-del-ink="${i.id}" title="Delete item">${iconTrash()}</button>
+            </div></td>
+          </tr>`).join('') : `<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:28px;">No ink items yet — add one to start tracking stock.</td></tr>`}</tbody>
+      </table></div>
+    </div>
+
+    <div class="table-wrap">
+      <div style="padding:14px 16px 4px;"><strong style="font-size:13.5px;">Stock in / stock out history</strong></div>
+      <div class="scroll-x"><table>
+        <thead><tr><th>Date</th><th>Item</th><th>Movement</th><th class="num">Qty</th><th>Printer / dept.</th><th>Remarks</th><th class="num">Balance after</th><th></th></tr></thead>
+        <tbody>${state.inkTx.length ? state.inkTx.map(t=>`
+          <tr>
+            <td>${fmtDate(t.date)}</td>
+            <td>${esc(t.itemName)}</td>
+            <td><span class="badge ${t.txType==='in'?'badge-in':'badge-out'}">${t.txType==='in'?'Stock in':'Stock out'}</span></td>
+            <td class="num" style="font-weight:700;">${t.txType==='in'?'+':'−'}${t.quantity}</td>
+            <td>${esc(t.printer)||'—'}</td>
+            <td>${esc(t.remarks)||'—'}</td>
+            <td class="num">${t.balanceAfter ?? '—'}</td>
+            <td><div class="rowcell-actions"><button class="icon-btn danger" data-del-tx="${t.id}" title="Delete &amp; reverse">${iconTrash()}</button></div></td>
+          </tr>`).join('') : `<tr><td colspan="8" style="text-align:center; color:var(--muted); padding:28px;">No stock movements logged yet.</td></tr>`}</tbody>
+      </table></div>
+    </div>
+  `;
+  document.getElementById('content').innerHTML = html;
+
+  document.getElementById('addInkItemBtn').addEventListener('click', ()=>openInkItemForm());
+  document.getElementById('logTxBtn').addEventListener('click', ()=>openInkTxForm());
+  document.querySelectorAll('[data-edit-ink]').forEach(b=>b.addEventListener('click', ()=>openInkItemForm(state.inkItems.find(i=>i.id===b.dataset.editInk))));
+  document.querySelectorAll('[data-del-ink]').forEach(b=>b.addEventListener('click', ()=>{
+    const item = state.inkItems.find(i=>i.id===b.dataset.delInk);
+    confirmModal('Delete ink item?', `This removes <strong>${esc(item.name)}</strong> from the catalog. Its transaction history will stay logged.`, async ()=>{
+      await dbDelete('inkItems', item.id); toast('Ink item deleted');
+    });
+  }));
+  document.querySelectorAll('[data-del-tx]').forEach(b=>b.addEventListener('click', ()=>{
+    const tx = state.inkTx.find(t=>t.id===b.dataset.delTx);
+    confirmModal('Delete this transaction?', `This reverses ${tx.txType==='in'?'a stock-in of':'a stock-out of'} <strong>${tx.quantity} ${esc(tx.itemName)}</strong> and restores the item's stock level.`, async ()=>{
+      const invItem = state.inkItems.find(i=>i.id===tx.itemId);
+      if(invItem){
+        const revertedStock = (invItem.currentStock||0) + (tx.txType==='in' ? -tx.quantity : tx.quantity);
+        await dbUpdate('inkItems', invItem.id, {currentStock: Math.max(0, revertedStock)});
+      }
+      await dbDelete('inkTx', tx.id);
+      toast('Transaction removed');
+    });
+  }));
+};
+
+function openInkItemForm(item){
+  const isEdit=!!item; item=item||{};
+  openModal({
+    title: isEdit?'Edit ink item':'New ink item',
+    bodyHtml:`
+      <div class="form-grid">
+        <div class="field full"><label>Item name</label><input id="f_name" value="${esc(item.name)}" placeholder="e.g. GI-76 BLACK"></div>
+        <div class="field"><label>Compatible printer</label><input id="f_printerModel" value="${esc(item.printerModel)}" list="printerModelList" placeholder="e.g. CANON GX7070">
+          <datalist id="printerModelList">${[...new Set(state.inkItems.map(i=>i.printerModel).filter(Boolean))].map(p=>`<option value="${esc(p)}">`).join('')}</datalist>
+        </div>
+        <div class="field"><label>Unit</label><input id="f_unit" value="${esc(item.unit)||'cartridge'}"></div>
+        ${isEdit? '' : `<div class="field"><label>Opening stock</label><input type="number" min="0" id="f_currentStock" value="${item.currentStock||0}"></div>`}
+        <div class="field"><label>Reorder level</label><input type="number" min="0" id="f_reorderLevel" value="${item.reorderLevel||1}"></div>
+      </div>
+      ${isEdit? `<p class="hint" style="margin-top:10px;">To change the stock quantity, use “Log stock in / out” so it stays recorded in history.</p>`:''}
+    `,
+    footHtml:`<button class="btn" data-close>Cancel</button><button class="btn btn-primary" id="saveBtn">${isEdit?'Save changes':'Add item'}</button>`,
+    afterMount:(root)=>{
+      root.querySelector('#saveBtn').addEventListener('click', async ()=>{
+        const data = {name:val('f_name'), printerModel:val('f_printerModel'), unit:val('f_unit'), reorderLevel: Number(val('f_reorderLevel'))||0};
+        if(!data.name){ toast('Add an item name', 'err'); return; }
+        if(isEdit){
+          await dbUpdate('inkItems', item.id, data);
+        } else {
+          const opening = Number(val('f_currentStock'))||0;
+          const newId = uid();
+          await dbSet('inkItems', newId, {...data, currentStock: opening});
+          if(opening > 0){
+            await dbAdd('inkTx', {itemId:newId, itemName:data.name, txType:'in', quantity:opening, date:new Date().toISOString().slice(0,10), printer:'', remarks:'Opening balance', balanceAfter:opening});
+          }
+        }
+        toast(isEdit?'Item updated':'Item added','ok'); closeModal();
+      });
+    }
+  });
+}
+
+function openInkTxForm(){
+  if(!state.inkItems.length){ toast('Add an ink item first', 'err'); return; }
+  openModal({
+    title:'Log stock in / out',
+    bodyHtml:`
+      <div class="form-grid">
+        <div class="field full"><label>Ink item</label>
+          <select id="f_itemId">${state.inkItems.map(i=>`<option value="${i.id}">${esc(i.name)} — ${i.currentStock||0} in stock</option>`).join('')}</select>
+        </div>
+        <div class="field"><label>Movement</label>
+          <select id="f_txType">
+            <option value="in">Stock in (received / purchased)</option>
+            <option value="out">Stock out (installed / used)</option>
+          </select>
+        </div>
+        <div class="field"><label>Quantity</label><input type="number" min="1" id="f_quantity" value="1"></div>
+        <div class="field"><label>Date</label><input type="date" id="f_date" value="${new Date().toISOString().slice(0,10)}"></div>
+        <div class="field"><label>Printer / department <span style="font-weight:400;color:var(--muted);">(optional)</span></label>
+          <input id="f_printer" list="printerUnitList" placeholder="e.g. CANON GX7070 — Admin">
+          <datalist id="printerUnitList">${INK_PRINTER_UNITS.map(p=>`<option value="${esc(p)}">`).join('')}</datalist>
+        </div>
+        <div class="field full"><label>Remarks</label><input id="f_remarks" placeholder="e.g. Replaced empty cartridge"></div>
+      </div>
+    `,
+    footHtml:`<button class="btn" data-close>Cancel</button><button class="btn btn-primary" id="saveBtn">Log transaction</button>`,
+    afterMount:(root)=>{
+      root.querySelector('#saveBtn').addEventListener('click', async ()=>{
+        const itemId = val('f_itemId');
+        const item = state.inkItems.find(i=>i.id===itemId);
+        const txType = val('f_txType');
+        const qty = Number(val('f_quantity'))||0;
+        if(qty<=0){ toast('Enter a quantity greater than 0', 'err'); return; }
+        const currentStock = item.currentStock||0;
+        if(txType==='out' && qty > currentStock){
+          toast(`Only ${currentStock} in stock — cannot stock out ${qty}`, 'err'); return;
+        }
+        const newBalance = txType==='in' ? currentStock+qty : currentStock-qty;
+        await dbUpdate('inkItems', item.id, {currentStock:newBalance});
+        await dbAdd('inkTx', {
+          itemId, itemName:item.name, txType, quantity:qty, date:val('f_date'),
+          printer:val('f_printer'), remarks:val('f_remarks'), balanceAfter:newBalance
+        });
+        toast('Transaction logged','ok'); closeModal();
+      });
+    }
+  });
+}
+
+/* =========================================================================
+   BITDEFENDER ACCOUNTS  (computed from Main Inventory)
+   ========================================================================= */
+VIEWS.bitdefender = function(){
+  setTopbar('BitDefender Accounts', 'Accounts in use, derived from Main Inventory');
+  const map = {};
+  state.inventory.forEach(r=>{
+    const acc = (r.bitdefender||'').trim();
+    if(!acc) return;
+    if(!map[acc]) map[acc] = [];
+    map[acc].push(r);
+  });
+  const accounts = Object.entries(map).sort((a,b)=>b[1].length-a[1].length);
+
+  const html = `
+    <div class="section-card">
+      <h4>Legend</h4>
+      <p class="desc">Account tiers used for BitDefender license planning</p>
+      <div style="display:flex; gap:22px; flex-wrap:wrap; font-size:13px;">
+        <div><span class="badge" style="background:#F6E27A; color:#5C4B00;">Mother</span> — up to 25 devices, includes child accounts</div>
+        <div><span class="badge" style="background:#BFE3C3; color:#215B2B;">Child</span> — device count depends on allotment</div>
+        <div><span class="badge" style="background:#E7E7E7; color:#444;">Subscription</span> — up to 10 devices</div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <div class="scroll-x"><table>
+        <thead><tr><th>Account</th><th class="num">Devices</th><th>Tagged devices</th></tr></thead>
+        <tbody>${accounts.length ? accounts.map(([acc,devs])=>`
+          <tr>
+            <td class="mono">${esc(acc)}</td>
+            <td class="num" style="font-weight:700;">${devs.length}</td>
+            <td>${devs.map(d=>esc(d.tagNo||d.model)).join(', ')}</td>
+          </tr>`).join('') : `<tr><td colspan="3" style="text-align:center; color:var(--muted); padding:28px;">No BitDefender accounts recorded on any device yet. Add one from a device's edit form in Main Inventory.</td></tr>`}</tbody>
+      </table></div>
+    </div>
+  `;
+  document.getElementById('content').innerHTML = html;
+};
+
+/* =========================================================================
+   MODAL infra
+   ========================================================================= */
+function openModal({title, bodyHtml, footHtml, afterMount}){
+  const root = document.getElementById('modalRoot');
+  root.innerHTML = `
+    <div class="overlay" id="overlay">
+      <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal-head"><h3>${esc(title)}</h3><button class="icon-btn" data-close aria-label="Close">${iconClose()}</button></div>
+        <div class="modal-body">${bodyHtml}</div>
+        <div class="modal-foot">${footHtml}</div>
+      </div>
+    </div>
+  `;
+  root.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click', closeModal));
+  document.getElementById('overlay').addEventListener('click', (e)=>{ if(e.target.id==='overlay') closeModal(); });
+  if(afterMount) afterMount(root);
+}
+function closeModal(){ document.getElementById('modalRoot').innerHTML=''; }
+function val(id){ const el=document.getElementById(id); return el ? el.value.trim() : ''; }
+
+function positionCaretEnd(id){
+  const el = document.getElementById(id);
+  if(el){ el.focus(); const v=el.value; el.value=''; el.value=v; }
+}
+
+function emptyState(big, small){
+  return `<div class="table-wrap"><div class="empty-state"><div class="big">${esc(big)}</div><div>${esc(small)}</div></div></div>`;
+}
+function iconEdit(){ return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`; }
+function iconTrash(){ return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>`; }
+function iconEye(){ return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>`; }
+function iconWrench(){ return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 1 0-5.4 5.4L2 19l3 3 7.3-7.3a4 4 0 0 0 5.4-5.4l-2.8 2.8-2-2Z"/></svg>`; }
+function iconClose(){ return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>`; }
+function searchIcon(){ return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>`; }
+
+/* =========================================================================
+   INIT
+   ========================================================================= */
+initDb();
+</script>
+</body>
+</html>
