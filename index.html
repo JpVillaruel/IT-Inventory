@@ -7,10 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
-```js
-const SUPABASE_URL = 'https://gyxsjbecsokxkngrmltc.supabase.co/rest/v1/';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5eHNqYmVjc29reGtuZ3JtbHRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTExNDQ2OTAsImV4cCI6MjEwNjcyMDY5MH0.llEMOFUuGZiFl47UEnfM3f_NaCyFhEAGA_-nKYoYh9c';
-```
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
@@ -304,8 +300,8 @@ let dbReady = false;
 
 /* ---- Supabase config: fill these in with your project's values ---- */
 /* Supabase dashboard → Settings → API → "Project URL" and "anon public" key */
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_URL = 'https://gyxsjbecsokxkngrmltc.supabase.co/rest/v1/';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5eHNqYmVjc29reGtuZ3JtbHRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTExNDQ2OTAsImV4cCI6MjEwNjcyMDY5MH0.llEMOFUuGZiFl47UEnfM3f_NaCyFhEAGA_-nKYoYh9c';
 const SUPABASE_CONFIGURED = !SUPABASE_URL.includes('YOUR_SUPABASE') && !SUPABASE_ANON_KEY.includes('YOUR_SUPABASE');
 
 const state = {
